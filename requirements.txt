@@ -1,0 +1,15 @@
+gradio
+langchain==0.3.27
+langchain-core==0.3.75
+langchain-community==0.3.27
+langchain-huggingface==0.3.1
+langchain-groq==0.3.7
+faiss-cpu
+sentence-transformers
+pypdf
+python-docx
+pandas
+openpyxl
+unstructured
+python-pptx
+tiktoken
