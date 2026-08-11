@@ -10,6 +10,6 @@ pypdf
 python-docx
 pandas
 openpyxl
-unstructured
+
 python-pptx
 tiktoken
