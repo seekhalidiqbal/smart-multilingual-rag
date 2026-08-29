@@ -430,77 +430,61 @@ st.markdown(
 # ==========================================================
 
 def load_documents(files):
+    documents = []
 
+    if os.path.exists(UPLOAD_DIR):
+        shutil.rmtree(UPLOAD_DIR)
 
-documents = []
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-if os.path.exists(UPLOAD_DIR):
-    shutil.rmtree(UPLOAD_DIR)
+    for uploaded_file in files:
+        try:
+            filename = uploaded_file.name
 
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-for uploaded_file in files:
-
-    try:
-
-        filename = uploaded_file.name
-
-        save_path = os.path.join(
-            UPLOAD_DIR,
-            filename,
-        )
-
-        with open(save_path, "wb") as file:
-            file.write(uploaded_file.getbuffer())
-
-        extension = Path(filename).suffix.lower()
-
-        if extension == ".pdf":
-
-            loader = PyPDFLoader(save_path)
-
-        elif extension == ".docx":
-
-            loader = UnstructuredWordDocumentLoader(
-                save_path
+            save_path = os.path.join(
+                UPLOAD_DIR,
+                filename
             )
 
-        elif extension == ".txt":
+            with open(save_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
 
-            loader = TextLoader(
-                save_path,
-                encoding="utf-8",
+            extension = Path(filename).suffix.lower()
+
+            if extension == ".pdf":
+                loader = PyPDFLoader(save_path)
+
+            elif extension == ".docx":
+                loader = UnstructuredWordDocumentLoader(save_path)
+
+            elif extension == ".txt":
+                loader = TextLoader(
+                    save_path,
+                    encoding="utf-8"
+                )
+
+            elif extension == ".csv":
+                loader = CSVLoader(save_path)
+
+            elif extension == ".pptx":
+                loader = UnstructuredPowerPointLoader(save_path)
+
+            else:
+                continue
+
+            docs = loader.load()
+
+            for doc in docs:
+                doc.metadata["source"] = filename
+
+            documents.extend(docs)
+
+        except Exception as e:
+            st.error(
+                f"Error loading {uploaded_file.name}: {e}"
             )
 
-        elif extension == ".csv":
-
-            loader = CSVLoader(save_path)
-
-        elif extension == ".pptx":
-
-            loader = UnstructuredPowerPointLoader(
-                save_path
-            )
-
-        else:
-
-            continue
-
-        docs = loader.load()
-
-        for doc in docs:
-            doc.metadata["source"] = filename
-
-        documents.extend(docs)
-
-    except Exception as error:
-
-        st.error(
-            f"Error loading {uploaded_file.name}: {error}"
-        )
-
-return documents
-
+    return documents
 
 # ==========================================================
 
