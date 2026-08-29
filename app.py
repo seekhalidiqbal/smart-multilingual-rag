@@ -253,21 +253,16 @@ UPLOAD_DIR = "uploaded_documents"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # ==========================================================
-
 # GROQ API KEY
-
 # ==========================================================
 
-GROQ_API_KEY = None
-
 try:
-GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
+    GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
 except Exception:
-GROQ_API_KEY = None
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not GROQ_API_KEY:
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
+    st.warning("⚠️ GROQ_API_KEY is not configured.")
 # ==========================================================
 
 # HEADER
