@@ -392,19 +392,24 @@ st.caption("Version 7.0")
 # ==========================================================
 
 if st.session_state.vector_db is not None:
-
-
-st.markdown(
-    """
-    <div class="status-ready">
-        🟢 System Ready — Knowledge Base is active and ready for questions.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-
+    st.markdown(
+        """
+        <div class="status-ready">
+            🟢 System Ready — Knowledge Base is active and ready for questions.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 else:
+    st.markdown(
+        """
+        <div class="status-waiting">
+            🟠 Waiting for Documents — Upload documents from the sidebar and click
+            <b>Process Documents</b>.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 st.markdown(
