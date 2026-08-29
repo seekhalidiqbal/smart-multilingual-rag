@@ -371,62 +371,28 @@ except Exception:
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # ==========================================================
-
-# HERO HEADER
-
-# ==========================================================
-
-st.markdown(
-""" <div class="hero">
-
-```
-    <div class="hero-title">
-        🤖 Smart Multilingual AI RAG Assistant
-    </div>
-
-    <div class="hero-subtitle">
-        Intelligent Multi-Document Question Answering System
-    </div>
-
-    <div class="hero-small">
-        Department of Computer Science • University of Okara • MSCS Research Project
-    </div>
-
-</div>
-""",
-unsafe_allow_html=True,
-
-)
-
-# ==========================================================
-
 # SYSTEM STATUS
-
 # ==========================================================
 
 if st.session_state.vector_db is not None:
-
-st.markdown(
-    """
-    <div class="status-ready">
-        🟢 System Ready — Knowledge Base is active and ready for questions.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
+    st.markdown(
+        """
+        <div class="status-ready">
+            🟢 System Ready — Knowledge Base is active and ready for questions.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 else:
-
-st.markdown(
-    """
-    <div class="status-waiting">
-        🟠 Waiting for Documents — Upload documents from the sidebar
-        and click <b>Process Documents</b>.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-```
+    st.markdown(
+        """
+        <div class="status-waiting">
+            🟠 Waiting for Documents — Upload documents from the sidebar and click
+            <b>Process Documents</b>.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ==========================================================
 
