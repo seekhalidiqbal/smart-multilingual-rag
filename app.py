@@ -491,28 +491,25 @@ def load_documents(files):
 # SMART CHUNKING
 
 # ==========================================================
-
 def create_chunks(documents):
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=800,
+        chunk_overlap=150,
+        separators=[
+            "\n\n",
+            "\n",
+            ". ",
+            "? ",
+            "! ",
+            "; ",
+            ", ",
+            " ",
+            "",
+        ],
+        keep_separator=True,
+    )
 
-
-splitter = RecursiveCharacterTextSplitter(
-    chunk_size=800,
-    chunk_overlap=150,
-    separators=[
-        "\n\n",
-        "\n",
-        ". ",
-        "? ",
-        "! ",
-        "; ",
-        ", ",
-        " ",
-        "",
-    ],
-    keep_separator=True,
-)
-
-return splitter.split_documents(documents)
+    return splitter.split_documents(documents)
 
 
 # ==========================================================
