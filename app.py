@@ -39,7 +39,7 @@ initial_sidebar_state="expanded",
 st.markdown(
 """ <style>
 
-```
+
 .stApp {
     background: #f5f7fb;
 }
@@ -273,7 +273,7 @@ st.markdown(
 """ <div class="hero"> <div class="hero-title">
 🤖 Smart Multilingual AI RAG Assistant </div>
 
-```
+
     <div class="hero-subtitle">
         Intelligent Multi-Document Question Answering System
     </div>
@@ -295,7 +295,7 @@ unsafe_allow_html=True,
 
 with st.sidebar:
 
-```
+
 st.markdown("## 📂 Document Management")
 
 st.caption(
@@ -386,7 +386,7 @@ st.divider()
 
 st.caption("Smart Multilingual AI RAG Assistant")
 st.caption("Version 7.0")
-```
+
 
 # ==========================================================
 
@@ -396,7 +396,7 @@ st.caption("Version 7.0")
 
 if st.session_state.vector_db is not None:
 
-```
+
 st.markdown(
     """
     <div class="status-ready">
@@ -405,11 +405,11 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
+
 
 else:
 
-```
+
 st.markdown(
     """
     <div class="status-waiting">
@@ -419,7 +419,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
+
 
 # ==========================================================
 
@@ -429,7 +429,7 @@ st.markdown(
 
 def load_documents(files):
 
-```
+
 documents = []
 
 if os.path.exists(UPLOAD_DIR):
@@ -498,7 +498,7 @@ for uploaded_file in files:
         )
 
 return documents
-```
+
 
 # ==========================================================
 
@@ -508,7 +508,7 @@ return documents
 
 def create_chunks(documents):
 
-```
+
 splitter = RecursiveCharacterTextSplitter(
     chunk_size=800,
     chunk_overlap=150,
@@ -527,7 +527,7 @@ splitter = RecursiveCharacterTextSplitter(
 )
 
 return splitter.split_documents(documents)
-```
+
 
 # ==========================================================
 
@@ -537,7 +537,7 @@ return splitter.split_documents(documents)
 
 def build_vector_database(chunks):
 
-```
+
 embedding_model = HuggingFaceEmbeddings(
     model_name="intfloat/multilingual-e5-base",
     model_kwargs={
@@ -554,7 +554,6 @@ vector_db = FAISS.from_documents(
 )
 
 return embedding_model, vector_db
-```
 
 # ==========================================================
 
@@ -564,7 +563,6 @@ return embedding_model, vector_db
 
 def build_rag(vector_db):
 
-```
 if not GROQ_API_KEY:
 
     raise RuntimeError(
@@ -589,7 +587,7 @@ llm = ChatGroq(
 )
 
 return retriever, llm
-```
+
 
 # ==========================================================
 
@@ -599,7 +597,7 @@ return retriever, llm
 
 def prepare_available_files(documents):
 
-```
+
 files = set()
 
 for doc in documents:
@@ -610,7 +608,6 @@ for doc in documents:
         files.add(os.path.basename(str(source)))
 
 return sorted(files)
-```
 
 # ==========================================================
 
@@ -620,7 +617,6 @@ return sorted(files)
 
 def normalize_file_name(filename):
 
-```
 if not filename:
     return ""
 
@@ -629,7 +625,7 @@ return (
     .strip()
     .lower()
 )
-```
+
 
 # ==========================================================
 
@@ -639,7 +635,7 @@ return (
 
 def get_file_chunks(file_name):
 
-```
+
 target = normalize_file_name(file_name)
 
 return [
@@ -649,7 +645,7 @@ return [
         doc.metadata.get("source", "")
     ) == target
 ]
-```
+
 
 # ==========================================================
 
@@ -659,7 +655,7 @@ return [
 
 def detect_file(question):
 
-```
+
 if not question:
     return None
 
@@ -678,7 +674,7 @@ for filename in st.session_state.available_files:
         return filename
 
 return None
-```
+
 
 # ==========================================================
 
@@ -688,7 +684,7 @@ return None
 
 def is_comparison_question(question):
 
-```
+
 q = question.lower()
 
 keywords = [
@@ -708,7 +704,7 @@ return any(
     keyword in q
     for keyword in keywords
 )
-```
+
 
 # ==========================================================
 
@@ -718,7 +714,7 @@ return any(
 
 def remove_duplicates(docs):
 
-```
+
 result = []
 seen = set()
 
@@ -746,7 +742,7 @@ for doc in docs:
         result.append(doc)
 
 return result
-```
+
 
 # ==========================================================
 
@@ -760,7 +756,6 @@ file_name,
 max_results=10,
 ):
 
-```
 file_chunks = get_file_chunks(file_name)
 
 if not file_chunks:
@@ -791,7 +786,6 @@ temp_retriever = temporary_db.as_retriever(
 )
 
 return temp_retriever.invoke(question)
-```
 
 # ==========================================================
 
@@ -801,7 +795,7 @@ return temp_retriever.invoke(question)
 
 def retrieve_from_all_files(question):
 
-```
+
 results = []
 
 for filename in st.session_state.available_files:
@@ -823,7 +817,7 @@ for filename in st.session_state.available_files:
         )
 
 return remove_duplicates(results)
-```
+
 
 # ==========================================================
 
@@ -833,7 +827,6 @@ return remove_duplicates(results)
 
 def build_context(docs):
 
-```
 context_parts = []
 
 for index, doc in enumerate(
@@ -874,7 +867,7 @@ for index, doc in enumerate(
     )
 
 return "\n\n".join(context_parts)
-```
+
 
 # ==========================================================
 
@@ -884,7 +877,6 @@ return "\n\n".join(context_parts)
 
 def build_file_summary():
 
-```
 lines = []
 
 for filename in st.session_state.available_files:
@@ -897,7 +889,7 @@ for filename in st.session_state.available_files:
     )
 
 return "\n".join(lines)
-```
+
 
 # ==========================================================
 
@@ -907,7 +899,6 @@ return "\n".join(lines)
 
 def ask_rag(question):
 
-```
 vector_db = st.session_state.vector_db
 retriever = st.session_state.retriever
 llm = st.session_state.llm
@@ -1054,7 +1045,7 @@ file_summary = build_file_summary()
 # ======================================================
 
 prompt = f"""
-```
+
 
 You are Smart Multilingual AI RAG Assistant.
 
@@ -1114,7 +1105,7 @@ DOCUMENT CONTEXT:
 ANSWER:
 """
 
-```
+
 response = llm.invoke(prompt)
 
 answer = (
@@ -1127,7 +1118,7 @@ return {
     "result": answer,
     "source_documents": source_documents,
 }
-```
+
 
 # ==========================================================
 
@@ -1137,7 +1128,7 @@ return {
 
 def process_documents(files):
 
-```
+
 if not files:
 
     st.warning(
@@ -1236,7 +1227,6 @@ except Exception as error:
     print(
         f"PROCESSING ERROR: {error}"
     )
-```
 
 # ==========================================================
 
@@ -1246,9 +1236,8 @@ except Exception as error:
 
 if process_button:
 
-```
 process_documents(uploaded_files)
-```
+
 
 # ==========================================================
 
@@ -1259,7 +1248,7 @@ process_documents(uploaded_files)
 st.markdown(
 """ <div class="info-card">
 
-```
+
     <div class="card-title">
         🧠 AI Research Assistant
     </div>
@@ -1275,7 +1264,7 @@ st.markdown(
 </div>
 """,
 unsafe_allow_html=True,
-```
+
 
 )
 
@@ -1291,7 +1280,6 @@ vector_count = 0
 
 if st.session_state.vector_db is not None:
 
-```
 try:
 
     vector_count = (
@@ -1301,7 +1289,7 @@ try:
 except Exception:
 
     vector_count = 0
-```
+
 
 stats = [
 (
@@ -1338,7 +1326,7 @@ f"{st.session_state.processing_time:.2f}s",
 
 for column, icon, number, label in stats:
 
-```
+
 with column:
 
     st.markdown(
@@ -1361,7 +1349,7 @@ with column:
         """,
         unsafe_allow_html=True,
     )
-```
+
 
 st.divider()
 
@@ -1373,7 +1361,6 @@ st.divider()
 
 if st.session_state.available_files:
 
-```
 st.subheader("📚 Knowledge Base")
 
 kb1, kb2 = st.columns([2, 1])
@@ -1432,7 +1419,6 @@ with kb2:
         """,
         unsafe_allow_html=True,
     )
-```
 
 # ==========================================================
 
@@ -1442,7 +1428,7 @@ with kb2:
 
 if st.session_state.chat_history:
 
-```
+
 st.subheader("💬 Conversation")
 
 for message in st.session_state.chat_history:
@@ -1454,7 +1440,7 @@ for message in st.session_state.chat_history:
         st.markdown(
             message["content"]
         )
-```
+
 
 # ==========================================================
 
@@ -1474,7 +1460,7 @@ question = st.chat_input(
 
 if question:
 
-```
+
 if st.session_state.vector_db is None:
 
     st.warning(
@@ -1646,7 +1632,6 @@ else:
                         "content": error_message,
                     }
                 )
-```
 
 # ==========================================================
 
@@ -1674,48 +1659,45 @@ if message["role"] == "assistant"
 
 with s1:
 
-```
+
 st.metric(
     "💬 Questions",
     questions_count,
 )
-```
+
 
 with s2:
 
-```
 st.metric(
     "🤖 Answers",
     answers_count,
 )
-```
 
 with s3:
 
-```
 st.metric(
     "🔎 Retrieved Chunks",
     st.session_state.last_retrieved,
 )
-```
+
 
 with s4:
 
-```
+
 st.metric(
     "⚡ Response Time",
     f"{st.session_state.last_response_time:.2f}s",
 )
-```
+
 
 with s5:
 
-```
+
 st.metric(
     "🧠 LLM",
     "GPT-OSS-120B",
 )
-```
+
 
 # ==========================================================
 
@@ -1725,7 +1707,7 @@ st.metric(
 
 if st.session_state.chat_history:
 
-```
+
 st.markdown("")
 
 clear_col, info_col = st.columns([1, 4])
@@ -1748,7 +1730,7 @@ with info_col:
     st.caption(
         "Conversation history is maintained during the current Streamlit session."
     )
-```
+
 
 # ==========================================================
 
@@ -1764,7 +1746,7 @@ cap1, cap2, cap3 = st.columns(3)
 
 with cap1:
 
-```
+
 st.markdown(
     """
     <div class="capability-card">
@@ -1786,11 +1768,10 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
 
 with cap2:
 
-```
+
 st.markdown(
     """
     <div class="capability-card">
@@ -1812,11 +1793,10 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
 
 with cap3:
 
-```
+
 st.markdown(
     """
     <div class="capability-card">
@@ -1838,7 +1818,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
+
 
 # ==========================================================
 
@@ -1849,7 +1829,6 @@ st.markdown(
 st.markdown(
 """ <div class="footer">
 
-```
     <hr>
 
     <b>🤖 Smart Multilingual AI RAG Assistant</b><br>
