@@ -292,11 +292,8 @@ unsafe_allow_html=True,
 # SIDEBAR
 
 # ==========================================================
-
 with st.sidebar:
-
-
-st.markdown("## 📂 Document Management")
+    st.markdown("## 📂 Document Management")
 
 st.caption(
     "Upload multiple documents to create your RAG knowledge base."
