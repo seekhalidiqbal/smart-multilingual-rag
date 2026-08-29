@@ -402,7 +402,7 @@ else:
 
 with st.sidebar:
 
-```
+
 st.markdown("## 📂 Document Management")
 
 st.caption(
