@@ -406,7 +406,6 @@ unsafe_allow_html=True,
 
 if st.session_state.vector_db is not None:
 
-```
 st.markdown(
     """
     <div class="status-ready">
@@ -415,11 +414,9 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
 
 else:
 
-```
 st.markdown(
     """
     <div class="status-waiting">
