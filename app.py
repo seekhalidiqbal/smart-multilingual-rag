@@ -510,8 +510,6 @@ def create_chunks(documents):
     )
 
     return splitter.split_documents(documents)
-
-
 # ==========================================================
 
 # BUILD VECTOR DATABASE
