@@ -1,4 +1,4 @@
-```python
+
 import os
 import shutil
 import time
@@ -1838,4 +1838,3 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-```
