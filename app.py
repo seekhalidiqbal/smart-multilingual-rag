@@ -330,27 +330,23 @@ unsafe_allow_html=True,
 # SESSION STATE
 
 # ==========================================================
-
 defaults = {
-"documents": [],
-"chunks": [],
-"embedding_model": None,
-"vector_db": None,
-"retriever": None,
-"llm": None,
-"available_files": [],
-"chat_history": [],
-"processing_time": 0.0,
-"last_retrieved": 0,
-"last_response_time": 0.0,
+    "documents": [],
+    "chunks": [],
+    "embedding_model": None,
+    "vector_db": None,
+    "retriever": None,
+    "llm": None,
+    "available_files": [],
+    "chat_history": [],
+    "processing_time": 0.0,
+    "last_retrieved": 0,
+    "last_response_time": 0.0,
 }
 
 for key, value in defaults.items():
-
-
-if key not in st.session_state:
-    st.session_state[key] = value
-```
+    if key not in st.session_state:
+        st.session_state[key] = value
 
 # ==========================================================
 
