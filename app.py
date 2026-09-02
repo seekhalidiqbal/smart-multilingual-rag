@@ -37,7 +37,6 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-
     .stApp {
         background: #f5f7fb;
     }
@@ -49,12 +48,7 @@ st.markdown(
     }
 
     .hero {
-        background: linear-gradient(
-            135deg,
-            #0f172a 0%,
-            #1d4ed8 55%,
-            #2563eb 100%
-        );
+        background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #2563eb 100%);
         padding: 30px 35px;
         border-radius: 20px;
         margin-bottom: 20px;
@@ -194,7 +188,6 @@ st.markdown(
         font-weight: 650;
         min-height: 42px;
     }
-
     </style>
     """,
     unsafe_allow_html=True,
@@ -229,7 +222,6 @@ for key, value in defaults.items():
 # ==========================================================
 
 UPLOAD_DIR = "uploaded_documents"
-
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
@@ -248,21 +240,11 @@ except Exception:
 # ==========================================================
 
 st.markdown(
-    """
-    <div class="hero">
-        <div class="hero-title">
-            🤖 Smart Multilingual AI RAG Assistant
-        </div>
-
-        <div class="hero-subtitle">
-            Intelligent Multi-Document Question Answering System
-        </div>
-
-        <div class="hero-small">
-            Department of Computer Science • University of Okara • MSCS Research Project
-        </div>
-    </div>
-    """,
+    """<div class="hero">
+        <div class="hero-title">🤖 Smart Multilingual AI RAG Assistant</div>
+        <div class="hero-subtitle">Intelligent Multi-Document Question Answering System</div>
+        <div class="hero-small">Department of Computer Science • University of Okara • MSCS Research Project</div>
+    </div>""",
     unsafe_allow_html=True,
 )
 
@@ -273,21 +255,16 @@ st.markdown(
 
 if st.session_state.vector_db is not None:
     st.markdown(
-        """
-        <div class="status-ready">
+        """<div class="status-ready">
             🟢 System Ready — Knowledge Base is active and ready for questions.
-        </div>
-        """,
+        </div>""",
         unsafe_allow_html=True,
     )
 else:
     st.markdown(
-        """
-        <div class="status-waiting">
-            🟠 Waiting for Documents — Upload documents from the sidebar and
-            click <b>Process Documents</b>.
-        </div>
-        """,
+        """<div class="status-waiting">
+            🟠 Waiting for Documents — Upload documents from the sidebar and click <b>Process Documents</b>.
+        </div>""",
         unsafe_allow_html=True,
     )
 
@@ -297,12 +274,8 @@ else:
 # ==========================================================
 
 with st.sidebar:
-
     st.markdown("## 📂 Document Management")
-
-    st.caption(
-        "Upload multiple documents to create your RAG knowledge base."
-    )
+    st.caption("Upload multiple documents to create your RAG knowledge base.")
 
     uploaded_files = st.file_uploader(
         "📁 Select Documents",
@@ -319,39 +292,22 @@ with st.sidebar:
     st.divider()
 
     st.markdown("### 📊 Knowledge Base")
-
-    st.metric(
-        "📂 Uploaded Files",
-        len(st.session_state.available_files),
-    )
-
-    st.metric(
-        "📄 Pages / Documents",
-        len(st.session_state.documents),
-    )
-
-    st.metric(
-        "🧩 Generated Chunks",
-        len(st.session_state.chunks),
-    )
+    st.metric("📂 Uploaded Files", len(st.session_state.available_files))
+    st.metric("📄 Pages / Documents", len(st.session_state.documents))
+    st.metric("🧩 Generated Chunks", len(st.session_state.chunks))
 
     vector_count = 0
-
     if st.session_state.vector_db is not None:
         try:
             vector_count = st.session_state.vector_db.index.ntotal
         except Exception:
             vector_count = 0
 
-    st.metric(
-        "🔍 FAISS Vectors",
-        vector_count,
-    )
+    st.metric("🔍 FAISS Vectors", vector_count)
 
     st.divider()
 
     st.markdown("### 🧠 RAG Components")
-
     st.write("✅ Multi-Document Support")
     st.write("✅ Smart Chunking")
     st.write("✅ Multilingual Embeddings")
@@ -367,25 +323,20 @@ with st.sidebar:
     st.markdown(
         """
         **LLM Model**
-
         `openai/gpt-oss-120b`
 
         **Embedding Model**
-
         `intfloat/multilingual-e5-base`
 
         **Chunk Size**
-
         `800`
 
         **Chunk Overlap**
-
         `150`
         """
     )
 
     st.divider()
-
     st.caption("Smart Multilingual AI RAG Assistant")
     st.caption("Version 7.0")
 
@@ -395,7 +346,6 @@ with st.sidebar:
 # ==========================================================
 
 def load_documents(files):
-
     documents = []
 
     if os.path.exists(UPLOAD_DIR):
@@ -404,15 +354,9 @@ def load_documents(files):
     os.makedirs(UPLOAD_DIR, exist_ok=True)
 
     for uploaded_file in files:
-
         try:
-
             filename = uploaded_file.name
-
-            save_path = os.path.join(
-                UPLOAD_DIR,
-                filename,
-            )
+            save_path = os.path.join(UPLOAD_DIR, filename)
 
             with open(save_path, "wb") as file:
                 file.write(uploaded_file.getbuffer())
@@ -420,34 +364,16 @@ def load_documents(files):
             extension = Path(filename).suffix.lower()
 
             if extension == ".pdf":
-
                 loader = PyPDFLoader(save_path)
-
             elif extension == ".docx":
-
-                loader = UnstructuredWordDocumentLoader(
-                    save_path
-                )
-
+                loader = UnstructuredWordDocumentLoader(save_path)
             elif extension == ".txt":
-
-                loader = TextLoader(
-                    save_path,
-                    encoding="utf-8",
-                )
-
+                loader = TextLoader(save_path, encoding="utf-8")
             elif extension == ".csv":
-
                 loader = CSVLoader(save_path)
-
             elif extension == ".pptx":
-
-                loader = UnstructuredPowerPointLoader(
-                    save_path
-                )
-
+                loader = UnstructuredPowerPointLoader(save_path)
             else:
-
                 continue
 
             docs = loader.load()
@@ -458,10 +384,7 @@ def load_documents(files):
             documents.extend(docs)
 
         except Exception as error:
-
-            st.error(
-                f"Error loading {uploaded_file.name}: {error}"
-            )
+            st.error(f"Error loading {uploaded_file.name}: {error}")
 
     return documents
 
@@ -471,24 +394,12 @@ def load_documents(files):
 # ==========================================================
 
 def create_chunks(documents):
-
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,
         chunk_overlap=150,
-        separators=[
-            "\n\n",
-            "\n",
-            ". ",
-            "? ",
-            "! ",
-            "; ",
-            ", ",
-            " ",
-            "",
-        ],
+        separators=["\n\n", "\n", ". ", "? ", "! ", "; ", ", ", " ", ""],
         keep_separator=True,
     )
-
     return splitter.split_documents(documents)
 
 
@@ -497,22 +408,13 @@ def create_chunks(documents):
 # ==========================================================
 
 def build_vector_database(chunks):
-
     embedding_model = HuggingFaceEmbeddings(
         model_name="intfloat/multilingual-e5-base",
-        model_kwargs={
-            "device": "cpu",
-        },
-        encode_kwargs={
-            "normalize_embeddings": True,
-        },
+        model_kwargs={"device": "cpu"},
+        encode_kwargs={"normalize_embeddings": True},
     )
 
-    vector_db = FAISS.from_documents(
-        chunks,
-        embedding_model,
-    )
-
+    vector_db = FAISS.from_documents(chunks, embedding_model)
     return embedding_model, vector_db
 
 
@@ -521,12 +423,9 @@ def build_vector_database(chunks):
 # ==========================================================
 
 def build_rag(vector_db):
-
     if not GROQ_API_KEY:
-
         raise Exception(
-            "GROQ_API_KEY is not configured. "
-            "Please add GROQ_API_KEY to Streamlit Secrets."
+            "GROQ_API_KEY is not configured. Please add GROQ_API_KEY to Streamlit Secrets."
         )
 
     retriever = vector_db.as_retriever(
@@ -553,27 +452,15 @@ def build_rag(vector_db):
 # ==========================================================
 
 def prepare_available_files(documents):
-
     files = sorted(
         list(
             set(
-                os.path.basename(
-                    str(
-                        doc.metadata.get(
-                            "source",
-                            "",
-                        )
-                    )
-                )
+                os.path.basename(str(doc.metadata.get("source", "")))
                 for doc in documents
-                if doc.metadata.get(
-                    "source",
-                    "",
-                )
+                if doc.metadata.get("source", "")
             )
         )
     )
-
     return files
 
 
@@ -582,13 +469,9 @@ def prepare_available_files(documents):
 # ==========================================================
 
 def normalize_file_name(filename):
-
     if not filename:
         return ""
-
-    return os.path.basename(
-        str(filename)
-    ).strip().lower()
+    return os.path.basename(str(filename)).strip().lower()
 
 
 # ==========================================================
@@ -596,18 +479,11 @@ def normalize_file_name(filename):
 # ==========================================================
 
 def get_file_chunks(file_name):
-
     target = normalize_file_name(file_name)
-
     return [
         doc
         for doc in st.session_state.chunks
-        if normalize_file_name(
-            doc.metadata.get(
-                "source",
-                "",
-            )
-        ) == target
+        if normalize_file_name(doc.metadata.get("source", "")) == target
     ]
 
 
@@ -616,23 +492,17 @@ def get_file_chunks(file_name):
 # ==========================================================
 
 def detect_file(question):
-
     if not question:
         return None
 
     question_lower = question.lower()
 
     for filename in st.session_state.available_files:
-
         if filename.lower() in question_lower:
             return filename
 
     for filename in st.session_state.available_files:
-
-        base = os.path.splitext(
-            filename
-        )[0].lower()
-
+        base = os.path.splitext(filename)[0].lower()
         if len(base) >= 4 and base in question_lower:
             return filename
 
@@ -644,9 +514,7 @@ def detect_file(question):
 # ==========================================================
 
 def is_comparison_question(question):
-
     question_lower = question.lower()
-
     keywords = [
         "compare",
         "comparison",
@@ -660,10 +528,7 @@ def is_comparison_question(question):
         "all uploaded files",
     ]
 
-    return any(
-        keyword in question_lower
-        for keyword in keywords
-    )
+    return any(keyword in question_lower for keyword in keywords)
 
 
 # ==========================================================
@@ -671,36 +536,16 @@ def is_comparison_question(question):
 # ==========================================================
 
 def remove_duplicates(docs):
-
     result = []
     seen = set()
 
     for doc in docs:
-
-        source = normalize_file_name(
-            doc.metadata.get(
-                "source",
-                "",
-            )
-        )
-
-        page = str(
-            doc.metadata.get(
-                "page",
-                "",
-            )
-        )
-
+        source = normalize_file_name(doc.metadata.get("source", ""))
+        page = str(doc.metadata.get("page", ""))
         content = doc.page_content or ""
-
-        key = (
-            source,
-            page,
-            content[:250],
-        )
+        key = (source, page, content[:250])
 
         if key not in seen:
-
             seen.add(key)
             result.append(doc)
 
@@ -711,33 +556,21 @@ def remove_duplicates(docs):
 # RETRIEVE FROM FILE
 # ==========================================================
 
-def retrieve_from_file(
-    question,
-    file_name,
-    max_results=10,
-):
-
+def retrieve_from_file(question, file_name, max_results=10):
     file_chunks = get_file_chunks(file_name)
 
     if not file_chunks:
         return []
 
     temporary_db = FAISS.from_documents(
-        file_chunks,
-        st.session_state.embedding_model,
+        file_chunks, st.session_state.embedding_model
     )
 
     temp_retriever = temporary_db.as_retriever(
         search_type="mmr",
         search_kwargs={
-            "k": min(
-                max_results,
-                len(file_chunks),
-            ),
-            "fetch_k": min(
-                30,
-                len(file_chunks),
-            ),
+            "k": min(max_results, len(file_chunks)),
+            "fetch_k": min(30, len(file_chunks)),
             "lambda_mult": 0.65,
         },
     )
@@ -750,26 +583,13 @@ def retrieve_from_file(
 # ==========================================================
 
 def retrieve_from_all_files(question):
-
     results = []
-
     for filename in st.session_state.available_files:
-
         try:
-
-            docs = retrieve_from_file(
-                question,
-                filename,
-                max_results=8,
-            )
-
+            docs = retrieve_from_file(question, filename, max_results=8)
             results.extend(docs)
-
         except Exception as error:
-
-            print(
-                f"Retrieval error: {error}"
-            )
+            print(f"Retrieval error: {error}")
 
     return remove_duplicates(results)
 
@@ -779,45 +599,23 @@ def retrieve_from_all_files(question):
 # ==========================================================
 
 def build_context(docs):
-
     context_parts = []
-
-    for index, doc in enumerate(
-        docs,
-        start=1,
-    ):
-
-        source = os.path.basename(
-            str(
-                doc.metadata.get(
-                    "source",
-                    "Unknown",
-                )
-            )
-        )
-
+    for index, doc in enumerate(docs, start=1):
+        source = os.path.basename(str(doc.metadata.get("source", "Unknown")))
         page = doc.metadata.get("page")
 
         if page is not None:
-
             try:
                 page = int(page) + 1
             except Exception:
                 pass
 
-        header = (
-            f"[Retrieved Chunk {index}] "
-            f"Source: {source}"
-        )
-
+        header = f"[Retrieved Chunk {index}] Source: {source}"
         if page is not None:
             header += f" | Page: {page}"
 
         content = doc.page_content or ""
-
-        context_parts.append(
-            header + "\n" + content
-        )
+        context_parts.append(header + "\n" + content)
 
     return "\n\n".join(context_parts)
 
@@ -827,17 +625,10 @@ def build_context(docs):
 # ==========================================================
 
 def build_file_summary():
-
     lines = []
-
     for filename in st.session_state.available_files:
-
         file_chunks = get_file_chunks(filename)
-
-        lines.append(
-            f"- {filename}: "
-            f"{len(file_chunks)} text chunk(s)"
-        )
+        lines.append(f"- {filename}: {len(file_chunks)} text chunk(s)")
 
     return "\n".join(lines)
 
@@ -847,124 +638,61 @@ def build_file_summary():
 # ==========================================================
 
 def ask_rag(question):
-
     vector_db = st.session_state.vector_db
     retriever = st.session_state.retriever
     llm = st.session_state.llm
 
-    if (
-        vector_db is None
-        or retriever is None
-        or llm is None
-    ):
-
-        raise Exception(
-            "RAG system is not ready. "
-            "Please process documents first."
-        )
+    if vector_db is None or retriever is None or llm is None:
+        raise Exception("RAG system is not ready. Please process documents first.")
 
     question = question.strip()
-
     question_lower = question.lower()
 
     if any(
         phrase in question_lower
-        for phrase in [
-            "how many files",
-            "number of files",
-            "total files",
-            "uploaded files",
-        ]
+        for phrase in ["how many files", "number of files", "total files", "uploaded files"]
     ):
-
         return {
-            "result": (
-                f"There are "
-                f"{len(st.session_state.available_files)} "
-                f"uploaded file(s)."
-            ),
+            "result": f"There are {len(st.session_state.available_files)} uploaded file(s).",
             "source_documents": [],
         }
 
     if any(
         phrase in question_lower
-        for phrase in [
-            "how many chunks",
-            "number of chunks",
-            "total chunks",
-            "generated chunks",
-        ]
+        for phrase in ["how many chunks", "number of chunks", "total chunks", "generated chunks"]
     ):
-
         return {
-            "result": (
-                f"{len(st.session_state.chunks)} "
-                f"chunk(s) were generated."
-            ),
+            "result": f"{len(st.session_state.chunks)} chunk(s) were generated.",
             "source_documents": [],
         }
 
     if any(
         phrase in question_lower
-        for phrase in [
-            "how many pages",
-            "number of pages",
-            "total pages",
-            "page count",
-        ]
+        for phrase in ["how many pages", "number of pages", "total pages", "page count"]
     ):
-
         return {
-            "result": (
-                f"There are "
-                f"{len(st.session_state.documents)} "
-                f"processed page/document object(s)."
-            ),
+            "result": f"There are {len(st.session_state.documents)} processed page/document object(s).",
             "source_documents": [],
         }
 
     matched_file = detect_file(question)
 
     if matched_file:
-
-        source_documents = retrieve_from_file(
-            question,
-            matched_file,
-            max_results=10,
-        )
-
+        source_documents = retrieve_from_file(question, matched_file, max_results=10)
     elif is_comparison_question(question):
-
-        source_documents = retrieve_from_all_files(
-            question
-        )
-
+        source_documents = retrieve_from_all_files(question)
     else:
+        source_documents = retriever.invoke(question)
 
-        source_documents = retriever.invoke(
-            question
-        )
-
-    source_documents = remove_duplicates(
-        source_documents
-    )
-
-    source_documents = source_documents[:30]
+    source_documents = remove_duplicates(source_documents)[:30]
 
     if not source_documents:
-
         return {
-            "result": (
-                "I couldn't find the answer "
-                "in the uploaded documents."
-            ),
+            "result": "I couldn't find the answer in the uploaded documents.",
             "source_documents": [],
         }
 
-    context = build_context(
-        source_documents
-    )
-
+    context = build_context(source_documents)
     file_summary = build_file_summary()
 
     prompt = f"""
@@ -983,26 +711,18 @@ IMPORTANT RULES:
 7. Keep information associated with the correct file.
 8. Answer in the same language as the user's question.
 
-If the requested information is genuinely absent,
-reply exactly:
-
+If the requested information is genuinely absent, reply exactly:
 I couldn't find the answer in the uploaded documents.
 
 EXACT INFORMATION:
-
-For email addresses, phone numbers, CNIC,
-names, dates, IDs, URLs, addresses,
-qualifications and other exact values:
-
+For email addresses, phone numbers, CNIC, names, dates, IDs, URLs, addresses, qualifications and other exact values:
 - Copy the exact value from the document.
 - Do not change spelling.
 - Do not change digits.
 - Do not invent values.
 
 COMPARISON:
-
 If the user asks to compare documents:
-
 - Compare every uploaded file separately.
 - Group pages belonging to the same filename.
 - Explain major similarities.
@@ -1011,27 +731,19 @@ If the user asks to compare documents:
 - Do not confuse processed pages with uploaded files.
 
 UPLOADED FILE INFORMATION:
-
 {file_summary}
 
 USER QUESTION:
-
 {question}
 
 DOCUMENT CONTEXT:
-
 {context}
 
 ANSWER:
 """
 
     response = llm.invoke(prompt)
-
-    answer = (
-        response.content
-        if hasattr(response, "content")
-        else str(response)
-    )
+    answer = response.content if hasattr(response, "content") else str(response)
 
     return {
         "result": answer,
@@ -1044,69 +756,34 @@ ANSWER:
 # ==========================================================
 
 def process_documents(files):
-
     if not files:
-
-        st.warning(
-            "Please upload at least one document."
-        )
-
+        st.warning("Please upload at least one document.")
         return
 
     start_time = time.time()
 
     try:
-
-        with st.spinner(
-            "📚 Loading documents..."
-        ):
-
+        with st.spinner("📚 Loading documents..."):
             documents = load_documents(files)
 
         if not documents:
-
-            st.error(
-                "No supported documents were loaded."
-            )
-
+            st.error("No supported documents were loaded.")
             return
 
-        with st.spinner(
-            "🧩 Creating smart chunks..."
-        ):
-
+        with st.spinner("🧩 Creating smart chunks..."):
             chunks = create_chunks(documents)
 
         if not chunks:
-
-            st.error(
-                "No text chunks were created."
-            )
-
+            st.error("No text chunks were created.")
             return
 
-        with st.spinner(
-            "🔍 Creating multilingual embeddings and FAISS database..."
-        ):
+        with st.spinner("🔍 Creating multilingual embeddings and FAISS database..."):
+            embedding_model, vector_db = build_vector_database(chunks)
 
-            (
-                embedding_model,
-                vector_db,
-            ) = build_vector_database(chunks)
+        with st.spinner("🤖 Building RAG system..."):
+            retriever, llm = build_rag(vector_db)
 
-        with st.spinner(
-            "🤖 Building RAG system..."
-        ):
-
-            retriever, llm = build_rag(
-                vector_db
-            )
-
-        available_files = (
-            prepare_available_files(
-                documents
-            )
-        )
+        available_files = prepare_available_files(documents)
 
         st.session_state.documents = documents
         st.session_state.chunks = chunks
@@ -1117,31 +794,17 @@ def process_documents(files):
         st.session_state.available_files = available_files
         st.session_state.chat_history = []
 
-        elapsed = round(
-            time.time() - start_time,
-            2,
-        )
-
+        elapsed = round(time.time() - start_time, 2)
         st.session_state.processing_time = elapsed
         st.session_state.last_retrieved = 0
         st.session_state.last_response_time = 0.0
 
-        st.success(
-            f"✅ Knowledge Base Ready! "
-            f"Processed in {elapsed} seconds."
-        )
-
+        st.success(f"✅ Knowledge Base Ready! Processed in {elapsed} seconds.")
         st.rerun()
 
     except Exception as error:
-
-        st.error(
-            f"❌ Processing Error: {error}"
-        )
-
-        print(
-            f"PROCESSING ERROR: {error}"
-        )
+        st.error(f"❌ Processing Error: {error}")
+        print(f"PROCESSING ERROR: {error}")
 
 
 # ==========================================================
@@ -1149,10 +812,7 @@ def process_documents(files):
 # ==========================================================
 
 if process_button:
-
-    process_documents(
-        uploaded_files
-    )
+    process_documents(uploaded_files)
 
 
 # ==========================================================
@@ -1160,21 +820,12 @@ if process_button:
 # ==========================================================
 
 st.markdown(
-    """
-    <div class="info-card">
-        <div class="card-title">
-            🧠 AI Research Assistant
-        </div>
-
+    """<div class="info-card">
+        <div class="card-title">🧠 AI Research Assistant</div>
         <div class="card-text">
-            Upload multiple documents, build a multilingual
-            semantic knowledge base, and ask questions using
-            Retrieval-Augmented Generation (RAG).
-            Answers are grounded in your uploaded documents
-            with source and page references.
+            Upload multiple documents, build a multilingual semantic knowledge base, and ask questions using Retrieval-Augmented Generation (RAG). Answers are grounded in your uploaded documents with source and page references.
         </div>
-    </div>
-    """,
+    </div>""",
     unsafe_allow_html=True,
 )
 
@@ -1186,76 +837,28 @@ st.markdown(
 col1, col2, col3, col4, col5 = st.columns(5)
 
 vector_count = 0
-
 if st.session_state.vector_db is not None:
-
     try:
-
-        vector_count = (
-            st.session_state.vector_db.index.ntotal
-        )
-
+        vector_count = st.session_state.vector_db.index.ntotal
     except Exception:
-
         vector_count = 0
 
-
 stats = [
-    (
-        col1,
-        "📂",
-        len(st.session_state.available_files),
-        "Files",
-    ),
-    (
-        col2,
-        "📄",
-        len(st.session_state.documents),
-        "Pages / Docs",
-    ),
-    (
-        col3,
-        "🧩",
-        len(st.session_state.chunks),
-        "Chunks",
-    ),
-    (
-        col4,
-        "🔍",
-        vector_count,
-        "FAISS Vectors",
-    ),
-    (
-        col5,
-        "⚡",
-        f"{st.session_state.processing_time:.2f}s",
-        "Processing Time",
-    ),
+    (col1, "📂", len(st.session_state.available_files), "Files"),
+    (col2, "📄", len(st.session_state.documents), "Pages / Docs"),
+    (col3, "🧩", len(st.session_state.chunks), "Chunks"),
+    (col4, "🔍", vector_count, "FAISS Vectors"),
+    (col5, "⚡", f"{st.session_state.processing_time:.2f}s", "Processing Time"),
 ]
 
-
 for column, icon, number, label in stats:
-
     with column:
-
         st.markdown(
-            f"""
-            <div class="stat-card">
-
-                <div class="stat-icon">
-                    {icon}
-                </div>
-
-                <div class="stat-number">
-                    {number}
-                </div>
-
-                <div class="stat-label">
-                    {label}
-                </div>
-
-            </div>
-            """,
+            f"""<div class="stat-card">
+                <div class="stat-icon">{icon}</div>
+                <div class="stat-number">{number}</div>
+                <div class="stat-label">{label}</div>
+            </div>""",
             unsafe_allow_html=True,
         )
 
@@ -1265,65 +868,32 @@ for column, icon, number, label in stats:
 # ==========================================================
 
 if st.session_state.available_files:
-
     st.divider()
-
-    st.subheader(
-        "📚 Knowledge Base"
-    )
+    st.subheader("📚 Knowledge Base")
 
     kb1, kb2 = st.columns([2, 1])
 
     with kb1:
-
         for filename in st.session_state.available_files:
-
-            file_chunks = get_file_chunks(
-                filename
-            )
-
+            file_chunks = get_file_chunks(filename)
             st.markdown(
-                f"""
-                <div class="source-box">
-                    📄 <b>{filename}</b>
-                    <br>
-                    <span style="color:#64748b;">
-                        {len(file_chunks)} text chunks
-                    </span>
-                </div>
-                """,
+                f"""<div class="source-box">
+                    📄 <b>{filename}</b><br>
+                    <span style="color:#64748b;">{len(file_chunks)} text chunks</span>
+                </div>""",
                 unsafe_allow_html=True,
             )
 
     with kb2:
-
         st.markdown(
-            f"""
-            <div class="info-card">
-
-                <div class="card-title">
-                    📊 Knowledge Base Summary
-                </div>
-
+            f"""<div class="info-card">
+                <div class="card-title">📊 Knowledge Base Summary</div>
                 <div class="card-text">
-
-                    📂 Files:
-                    <b>{len(st.session_state.available_files)}</b>
-
-                    <br><br>
-
-                    🧩 Chunks:
-                    <b>{len(st.session_state.chunks)}</b>
-
-                    <br><br>
-
-                    🔍 FAISS Vectors:
-                    <b>{vector_count}</b>
-
+                    📂 Files: <b>{len(st.session_state.available_files)}</b><br><br>
+                    🧩 Chunks: <b>{len(st.session_state.chunks)}</b><br><br>
+                    🔍 FAISS Vectors: <b>{vector_count}</b>
                 </div>
-
-            </div>
-            """,
+            </div>""",
             unsafe_allow_html=True,
         )
 
@@ -1333,31 +903,19 @@ if st.session_state.available_files:
 # ==========================================================
 
 if st.session_state.chat_history:
-
     st.divider()
-
-    st.subheader(
-        "💬 Conversation"
-    )
+    st.subheader("💬 Conversation")
 
     for message in st.session_state.chat_history:
-
-        with st.chat_message(
-            message["role"]
-        ):
-
-            st.markdown(
-                message["content"]
-            )
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
 
 # ==========================================================
 # QUESTION INPUT
 # ==========================================================
 
-question = st.chat_input(
-    "💬 Ask a question about your uploaded documents..."
-)
+question = st.chat_input("💬 Ask a question about your uploaded documents...")
 
 
 # ==========================================================
@@ -1365,76 +923,37 @@ question = st.chat_input(
 # ==========================================================
 
 if question:
-
     if st.session_state.vector_db is None:
-
-        st.warning(
-            "⚠️ Please upload and process documents first."
-        )
-
+        st.warning("⚠️ Please upload and process documents first.")
     else:
-
-        st.session_state.chat_history.append(
-            {
-                "role": "user",
-                "content": question,
-            }
-        )
+        st.session_state.chat_history.append({"role": "user", "content": question})
 
         with st.chat_message("user"):
-
             st.markdown(question)
 
         start_time = time.time()
 
         with st.chat_message("assistant"):
-
-            with st.spinner(
-                "🔎 Searching knowledge base..."
-            ):
-
+            with st.spinner("🔎 Searching knowledge base..."):
                 try:
-
                     result = ask_rag(question)
-
                     answer = result["result"]
+                    source_documents = result["source_documents"]
 
-                    source_documents = result[
-                        "source_documents"
-                    ]
-
-                    st.session_state.last_retrieved = (
-                        len(source_documents)
-                    )
-
-                    elapsed = round(
-                        time.time() - start_time,
-                        2,
-                    )
-
-                    st.session_state.last_response_time = (
-                        elapsed
-                    )
+                    st.session_state.last_retrieved = len(source_documents)
+                    elapsed = round(time.time() - start_time, 2)
+                    st.session_state.last_response_time = elapsed
 
                     st.markdown(answer)
 
                     source_groups = {}
-
                     for doc in source_documents:
-
                         source = os.path.basename(
-                            str(
-                                doc.metadata.get(
-                                    "source",
-                                    "Unknown",
-                                )
-                            )
+                            str(doc.metadata.get("source", "Unknown"))
                         )
-
                         page = doc.metadata.get("page")
 
                         if page is not None:
-
                             try:
                                 page = int(page) + 1
                             except Exception:
@@ -1443,85 +962,39 @@ if question:
                         if source not in source_groups:
                             source_groups[source] = []
 
-                        if (
-                            page is not None
-                            and page not in source_groups[source]
-                        ):
-
-                            source_groups[source].append(
-                                page
-                            )
+                        if page is not None and page not in source_groups[source]:
+                            source_groups[source].append(page)
 
                     if source_groups:
-
-                        st.markdown(
-                            "### 📄 Sources"
-                        )
-
+                        st.markdown("### 📄 Sources")
                         for source, pages in source_groups.items():
-
                             pages.sort()
-
                             if pages:
-
                                 st.markdown(
-                                    f"**📄 {source}** — "
-                                    f"Page(s): "
-                                    f"{', '.join(map(str, pages))}"
+                                    f"**📄 {source}** — Page(s): {', '.join(map(str, pages))}"
                                 )
-
                             else:
-
-                                st.markdown(
-                                    f"**📄 {source}**"
-                                )
+                                st.markdown(f"**📄 {source}**")
 
                     final_answer = answer
-
                     if source_groups:
-
-                        final_answer += (
-                            "\n\n### 📄 Sources\n"
-                        )
-
+                        final_answer += "\n\n### 📄 Sources\n"
                         for source, pages in source_groups.items():
-
                             pages.sort()
-
                             if pages:
-
-                                final_answer += (
-                                    f"\n- **{source}** "
-                                    f"(Pages: "
-                                    f"{', '.join(map(str, pages))})"
-                                )
-
+                                final_answer += f"\n- **{source}** (Pages: {', '.join(map(str, pages))})"
                             else:
-
-                                final_answer += (
-                                    f"\n- **{source}**"
-                                )
+                                final_answer += f"\n- **{source}**"
 
                     st.session_state.chat_history.append(
-                        {
-                            "role": "assistant",
-                            "content": final_answer,
-                        }
+                        {"role": "assistant", "content": final_answer}
                     )
 
                 except Exception as error:
-
-                    error_message = (
-                        f"❌ Error: {error}"
-                    )
-
+                    error_message = f"❌ Error: {error}"
                     st.error(error_message)
-
                     st.session_state.chat_history.append(
-                        {
-                            "role": "assistant",
-                            "content": error_message,
-                        }
+                        {"role": "assistant", "content": error_message}
                     )
 
 
@@ -1530,64 +1003,31 @@ if question:
 # ==========================================================
 
 st.divider()
-
-st.subheader(
-    "📊 RAG Statistics"
-)
+st.subheader("📊 RAG Statistics")
 
 s1, s2, s3, s4, s5 = st.columns(5)
 
 questions_count = sum(
-    1
-    for message in st.session_state.chat_history
-    if message["role"] == "user"
+    1 for message in st.session_state.chat_history if message["role"] == "user"
 )
-
 answers_count = sum(
-    1
-    for message in st.session_state.chat_history
-    if message["role"] == "assistant"
+    1 for message in st.session_state.chat_history if message["role"] == "assistant"
 )
-
 
 with s1:
-
-    st.metric(
-        "💬 Questions",
-        questions_count,
-    )
-
+    st.metric("💬 Questions", questions_count)
 
 with s2:
-
-    st.metric(
-        "🤖 Answers",
-        answers_count,
-    )
-
+    st.metric("🤖 Answers", answers_count)
 
 with s3:
-
-    st.metric(
-        "🔎 Retrieved Chunks",
-        st.session_state.last_retrieved,
-    )
-
+    st.metric("🔎 Retrieved Chunks", st.session_state.last_retrieved)
 
 with s4:
-
-    st.metric(
-        "⚡ Response Time",
-        f"{st.session_state.last_response_time:.2f}s",
-    )
-
+    st.metric("⚡ Response Time", f"{st.session_state.last_response_time:.2f}s")
 
 with s5:
-
-    st.metric(
-        "🧠 LLM",
-        "GPT-OSS-120B",
-    )
+    st.metric("🧠 LLM", "GPT-OSS-120B")
 
 
 # ==========================================================
@@ -1595,26 +1035,17 @@ with s5:
 # ==========================================================
 
 if st.session_state.chat_history:
-
     st.markdown("")
-
     clear_col, info_col = st.columns([1, 4])
 
     with clear_col:
-
-        if st.button(
-            "🗑️ Clear Chat",
-            use_container_width=True,
-        ):
-
+        if st.button("🗑️ Clear Chat", use_container_width=True):
             st.session_state.chat_history = []
             st.session_state.last_retrieved = 0
             st.session_state.last_response_time = 0.0
-
             st.rerun()
 
     with info_col:
-
         st.caption(
             "Conversation history is maintained during the current Streamlit session."
         )
@@ -1625,24 +1056,14 @@ if st.session_state.chat_history:
 # ==========================================================
 
 st.divider()
-
-st.subheader(
-    "🚀 System Capabilities"
-)
+st.subheader("🚀 System Capabilities")
 
 cap1, cap2, cap3 = st.columns(3)
 
-
 with cap1:
-
     st.markdown(
-        """
-        <div class="capability-card">
-
-            <div class="capability-title">
-                📚 Multi-Document RAG
-            </div>
-
+        """<div class="capability-card">
+            <div class="capability-title">📚 Multi-Document RAG</div>
             <div class="capability-text">
                 • PDF support<br>
                 • DOCX support<br>
@@ -1651,23 +1072,14 @@ with cap1:
                 • PPTX support<br>
                 • File-specific retrieval
             </div>
-
-        </div>
-        """,
+        </div>""",
         unsafe_allow_html=True,
     )
 
-
 with cap2:
-
     st.markdown(
-        """
-        <div class="capability-card">
-
-            <div class="capability-title">
-                🧠 AI Retrieval
-            </div>
-
+        """<div class="capability-card">
+            <div class="capability-title">🧠 AI Retrieval</div>
             <div class="capability-text">
                 • Multilingual embeddings<br>
                 • FAISS vector database<br>
@@ -1676,23 +1088,14 @@ with cap2:
                 • Document comparison<br>
                 • Semantic search
             </div>
-
-        </div>
-        """,
+        </div>""",
         unsafe_allow_html=True,
     )
 
-
 with cap3:
-
     st.markdown(
-        """
-        <div class="capability-card">
-
-            <div class="capability-title">
-                ⚡ AI Generation
-            </div>
-
+        """<div class="capability-card">
+            <div class="capability-title">⚡ AI Generation</div>
             <div class="capability-text">
                 • Groq inference<br>
                 • GPT-OSS-120B<br>
@@ -1701,9 +1104,7 @@ with cap3:
                 • Multilingual answering<br>
                 • Hallucination-aware prompting
             </div>
-
-        </div>
-        """,
+        </div>""",
         unsafe_allow_html=True,
     )
 
@@ -1713,20 +1114,12 @@ with cap3:
 # ==========================================================
 
 st.markdown(
-    """
-    <div class="footer">
-
+    """<div class="footer">
         <hr>
-
         <b>🤖 Smart Multilingual AI RAG Assistant</b><br>
-
         Department of Computer Science • University of Okara<br>
-
         MSCS Research Project • Version 7.0<br><br>
-
         Built with Streamlit • LangChain • FAISS • Hugging Face • Groq
-
-    </div>
-    """,
+    </div>""",
     unsafe_allow_html=True,
 )
