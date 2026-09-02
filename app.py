@@ -5,17 +5,6 @@ from pathlib import Path
 
 import streamlit as st
 
-# ====== PAGE SETUP + LOGO ======
-st.set_page_config(
-    page_title="Smart RAG Assistant - UO",
-    page_icon="🎓",
-    layout="wide"
-)
-
-LOGO_PATH = "assets/logo.png"
-st.image(LOGO_PATH, width=250)  # <-- ye line add ki
-
-# ====== BAQI IMPORTS ======
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
