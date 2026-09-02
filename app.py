@@ -31,6 +31,17 @@ st.set_page_config(
 
 
 # ==========================================================
+# LOGO PATH
+# ==========================================================
+
+LOGO_PATH = (
+    "https://raw.githubusercontent.com/"
+    "seekhalidiqbal/rag-assets/main/"
+    "logo%20University%20of%20Okara.png"
+)
+
+
+# ==========================================================
 # CUSTOM CSS
 # ==========================================================
 
@@ -53,6 +64,14 @@ st.markdown(
         border-radius: 20px;
         margin-bottom: 20px;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .hero-content {
+        flex: 1;
     }
 
     .hero-title {
@@ -73,6 +92,14 @@ st.markdown(
         color: #bfdbfe;
         font-size: 15px;
         margin-top: 7px;
+    }
+
+    .hero-logo {
+        max-height: 100px;
+        width: auto;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 6px;
     }
 
     .status-ready {
@@ -240,10 +267,15 @@ except Exception:
 # ==========================================================
 
 st.markdown(
-    """<div class="hero">
-        <div class="hero-title">🤖 Smart Multilingual AI RAG Assistant</div>
-        <div class="hero-subtitle">Intelligent Multi-Document Question Answering System</div>
-        <div class="hero-small">Department of Computer Science • University of Okara • MSCS Research Project</div>
+    f"""<div class="hero">
+        <div class="hero-content">
+            <div class="hero-title">🤖 Smart Multilingual AI RAG Assistant</div>
+            <div class="hero-subtitle">Intelligent Multi-Document Question Answering System</div>
+            <div class="hero-small">Department of Computer Science • University of Okara • MSCS Research Project</div>
+        </div>
+        <div>
+            <img src="{LOGO_PATH}" class="hero-logo" alt="University of Okara Logo" />
+        </div>
     </div>""",
     unsafe_allow_html=True,
 )
@@ -274,6 +306,7 @@ else:
 # ==========================================================
 
 with st.sidebar:
+    st.image(LOGO_PATH, use_column_width=True)
     st.markdown("## 📂 Document Management")
     st.caption("Upload multiple documents to create your RAG knowledge base.")
 
@@ -1114,8 +1147,9 @@ with cap3:
 # ==========================================================
 
 st.markdown(
-    """<div class="footer">
+    f"""<div class="footer">
         <hr>
+        <img src="{LOGO_PATH}" style="height: 40px; margin-bottom: 10px;" alt="University of Okara Logo"><br>
         <b>🤖 Smart Multilingual AI RAG Assistant</b><br>
         Department of Computer Science • University of Okara<br>
         MSCS Research Project • Version 7.0<br><br>
