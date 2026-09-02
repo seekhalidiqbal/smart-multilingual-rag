@@ -31,14 +31,10 @@ st.set_page_config(
 
 
 # ==========================================================
-# LOGO PATH
+# LOGO PATH (FIXED URL)
 # ==========================================================
 
-LOGO_PATH = (
-    "https://raw.githubusercontent.com/"
-    "seekhalidiqbal/rag-assets/main/"
-    "logo%20University%20of%20Okara.png"
-)
+LOGO_PATH = "https://raw.githubusercontent.com/seekhalidiqbal/rag-assets/main/logo%20University%20of%20Okara.png"
 
 
 # ==========================================================
@@ -109,14 +105,6 @@ st.markdown(
         color: #92400e;
     }
 
-    .section-card {
-        background: white;
-        padding: 20px;
-        border-radius: 14px;
-        border: 1px solid #e2e8f0;
-        margin-bottom: 20px;
-    }
-
     .section-title {
         font-size: 16px;
         font-weight: 700;
@@ -183,11 +171,11 @@ except Exception:
 
 
 # ==========================================================
-# HEADER BANNER (Gradio Exact Match)
+# HEADER BANNER
 # ==========================================================
 
 st.markdown(
-    f"""
+    """
     <div class="gradio-header">
         <div>
             <div class="gradio-title">🤖 Smart_Multilingual_Multi_Document_AI_RAG_Assistant</div>
@@ -195,7 +183,7 @@ st.markdown(
             <div class="gradio-meta">🎓 University of Okara • MSCS Research Project &nbsp;|&nbsp; ⚙️ Version 6.24</div>
         </div>
         <div>
-            <img src="{LOGO_PATH}" style="height: 80px; width: auto;" alt="University Logo"/>
+            <img src="https://raw.githubusercontent.com/seekhalidiqbal/rag-assets/main/logo%20University%20of%20Okara.png" style="height: 80px; width: auto;" alt="University Logo"/>
         </div>
     </div>
     """,
@@ -328,10 +316,11 @@ QUESTION:
 
 
 # ==========================================================
-# SIDEBAR (Gradio Document Management & System Info)
+# SIDEBAR
 # ==========================================================
 
 with st.sidebar:
+    st.image(LOGO_PATH, use_column_width=True)
     st.markdown("### 📂 Document Management")
     st.caption("Upload one or more documents and then click Process Documents to build the knowledge base.")
 
@@ -445,15 +434,12 @@ with col_right:
 st.divider()
 st.markdown('<div class="section-title">💬 AI Conversation</div>', unsafe_allow_html=True)
 
-# Display Chat History
 for msg in st.session_state.chat_history:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# User Input Box
 question_input = st.chat_input("🔎 Type your question and press Enter to submit...")
 
-# Handle Preset Click OR Manual Input
 active_question = question_input or st.session_state.preset_question
 
 if active_question:
@@ -482,7 +468,6 @@ if active_question:
                     st.session_state.last_response_time = elapsed
                     st.session_state.last_language = selected_lang if selected_lang != "Auto / Detect" else "Detected"
 
-                    # Format Response Content
                     response_text = f"{answer}\n\n**📄 Sources**\n"
                     
                     seen_sources = set()
@@ -528,7 +513,7 @@ if st.session_state.chat_history:
 
 
 # ==========================================================
-# FOOTER (Exact Gradio Copyright Match)
+# FOOTER
 # ==========================================================
 
 st.markdown(
