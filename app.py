@@ -17,16 +17,17 @@ LOGO_PATH = "logo.png"
 
 st.markdown("""
     <style>
-   .stApp{background:#f8fafc;}
-   .block-container{max-width:1400px;padding-top:1rem;}
-   .gradio-title{color:#0f172a;font-size:24px;font-weight:800;word-wrap:break-word;white-space:normal;line-height:1.3;}
-   .gradio-sub{color:#475569;font-size:15px;font-weight:600;margin-top:4px;}
-   .gradio-meta{color:#64748b;font-size:13px;margin-top:4px;}
-   .status-card{padding:14px 18px;border-radius:12px;font-weight:600;margin-bottom:20px;font-size:14px;}
-   .status-ready{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
-   .status-waiting{background:#fffbeb;border:1px solid #fef3c7;color:#92400e;}
-   .section-title{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;}
-   .footer-gradio{text-align:center;color:#64748b;font-size:12px;padding:25px 0;border-top:1px solid #e2e8f0;margin-top:30px;}
+  .stApp{background:#f8fafc;}
+  .block-container{max-width:1400px;padding-top:1rem;}
+  .header-box{background:#ffffff;padding:20px;border-radius:16px;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.03);margin-bottom:20px;}
+  .header-title{color:#0f172a;font-size:26px;font-weight:800;line-height:1.3;}
+  .header-sub{color:#475569;font-size:15px;font-weight:600;margin-top:4px;}
+  .header-meta{color:#64748b;font-size:13px;margin-top:4px;}
+  .status-card{padding:14px 18px;border-radius:12px;font-weight:600;margin-bottom:20px;font-size:14px;}
+  .status-ready{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+  .status-waiting{background:#fffbeb;border:1px solid #fef3c7;color:#92400e;}
+  .section-title{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;}
+  .footer-gradio{text-align:center;color:#64748b;font-size:12px;padding:25px 0;border-top:1px solid #e2e8f0;margin-top:30px;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -39,21 +40,21 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 try: GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
 except Exception: GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# ================= HEADER FIXED =================
-header_container = st.container()
-with header_container:
-    col1, col2 = st.columns([4, 1]) # logo ke liye zyada space
+# ================= HEADER 100% WORKING =================
+with st.container():
+    st.markdown('<div class="header-box">', unsafe_allow_html=True)
+    col1, col2 = st.columns([4, 1])
     with col1:
-        st.markdown('<div class="gradio-title">🤖 Smart Multilingual Multi Document AI RAG Assistant</div>', unsafe_allow_html=True)
-        st.markdown('<div class="gradio-sub">💻 Department of Computer Science</div>', unsafe_allow_html=True)
-        st.markdown('<div class="gradio-meta">🎓 University of Okara • MSCS Research Project &nbsp;|&nbsp; ⚙️ Version 6.24</div>', unsafe_allow_html=True)
+        st.markdown('<div class="header-title">🤖 Smart Multilingual Multi Document AI RAG Assistant</div>', unsafe_allow_html=True)
+        st.markdown('<div class="header-sub">💻 Department of Computer Science</div>', unsafe_allow_html=True)
+        st.markdown('<div class="header-meta">🎓 University of Okara • MSCS Research Project | ⚙️ Version 6.24</div>', unsafe_allow_html=True)
     with col2:
         if os.path.exists(LOGO_PATH): 
             st.image(LOGO_PATH, width=110)
         else: 
-            st.caption("Logo not found")
-st.markdown('<hr style="margin:20px 0; border:1px solid #e2e8f0;">', unsafe_allow_html=True)
-# ================================================
+            st.warning("Logo.png not found")
+    st.markdown('</div>', unsafe_allow_html=True)
+# =======================================================
 
 # FUNCTIONS
 def load_documents(files):
