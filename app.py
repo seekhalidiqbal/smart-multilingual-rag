@@ -13,8 +13,7 @@ load_dotenv()
 
 st.set_page_config(page_title="Smart Multilingual RAG", layout="wide")
 
-# --- 1. FUNCTIONS ---
-
+# --- FUNCTIONS ---
 @st.cache_resource
 def get_embeddings():
     return HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
@@ -40,9 +39,10 @@ def load_documents(uploaded_files):
         else:
             continue
         
-        docs.extend(loader.load())
-        for doc in docs[-loader.load().__len__():]:
+        loaded_docs = loader.load()
+        for doc in loaded_docs:
             doc.metadata["source"] = uploaded_file.name
+        docs.extend(loaded_docs)
     shutil.rmtree(temp_dir)
     return docs
 
@@ -69,24 +69,25 @@ def ask_rag(question, selected_lang):
         src = os.path.basename(str(doc.metadata.get("source", "Unknown")))
         page = doc.metadata.get("page")
         page_str = f" (Page {int(page)+1})" if page is not None else ""
-        context_parts.append(f"[{idx}] Document: (src){page_str}\n{doc.page_content}")
+        context_parts.append(f"[{idx}] Document: {src}{page_str}\n{doc.page_content}")
     context = "\n\n".join(context_parts)
     lang_instruction = f"Answer explicitly in {selected_lang} language." if selected_lang!= "Auto / Detect" else "Answer in the same language as the user question."
     prompt = f"You are Smart Multilingual AI RAG Assistant.\nAnswer strictly from the uploaded document context.\nRULES:\n1. Grounding score must be 100%. No outside knowledge.\n2. {lang_instruction}\n\nCONTEXT:\n{context}\n\nQUESTION: {question}\n\nANSWER:"
     response = llm.invoke(prompt)
     return {"result": response.content, "source_documents": source_documents}
 
-# --- 2. SESSION STATE INIT ---
+# --- SESSION STATE ---
 if "vector_db" not in st.session_state:
     st.session_state.vector_db = None
 if "available_files" not in st.session_state:
     st.session_state.available_files = []
 
-# --- 3. SIDEBAR ---
+# --- SIDEBAR - YE WALA PEHLE JESA HI HAI ---
 with st.sidebar:
     st.markdown("### 📂 Document Management")
     st.caption("Upload one or more documents and then click Process Documents to build the knowledge base.")
 
+    # SIRF YAHAN KEY ADD KI HAI
     uploaded_files = st.file_uploader("📁 Select Documents", type=["pdf", "docx", "txt", "csv", "pptx"], accept_multiple_files=True, key="file_uploader")
 
     if st.button("⚙️ Process Documents", type="primary", use_container_width=True):
@@ -108,7 +109,7 @@ with st.sidebar:
     st.markdown("### ℹ️ System Information")
     st.markdown("📚 **Multiple Document Support**\n🔎 **Semantic Search (FAISS)**\n🧠 **Context-Aware Retrieval**\n🤖 **AI Response Generation**")
 
-# --- 4. MAIN APP ---
+# --- MAIN APP ---
 st.title("🧠 Smart Multilingual RAG Assistant")
 
 if st.session_state.vector_db is None:
