@@ -34,11 +34,8 @@ st.set_page_config(
 # LOGO PATH
 # ==========================================================
 
-LOGO_PATH = (
-    "https://raw.githubusercontent.com/"
-    "seekhalidiqbal/rag-assets/main/"
-    "logo%20University%20of%20Okara.png"
-)
+
+   logo_path = "logo.png"
 
 
 # ==========================================================
