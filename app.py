@@ -107,8 +107,7 @@ def ask_rag(question, selected_lang):
 # SIDEBAR
 with st.sidebar:
     st.markdown("### 📂 Document Management")
-    uploaded_files = st.file_uploader("📁 Select Documents", type=["pdf", "docx", "txt", "csv", "pptx"], accept_multiple_files=True)
-    if st.button("⚙️ Process Documents", type="primary", use_container_width=True):
+uploaded_files = st.file_uploader("📁 Select Documents", type=["pdf", "docx", "txt", "csv", "pptx"], accept_multiple_files=True, key="file_uploader")
         if uploaded_files:
             with st.spinner("Processing..."):
                 docs = load_documents(uploaded_files)
