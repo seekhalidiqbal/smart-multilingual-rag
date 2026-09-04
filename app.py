@@ -12,14 +12,15 @@ import pandas as pd
 
 load_dotenv()
 
-st.set_page_config(page_title="Smart Multilingual RAG", layout="wide")
+st.set_page_config(page_title="Smart Multilingual RAG", layout="wide", page_icon="🧠")
 
-# --- HEADER ---
-col1, col2 = st.columns([3,1])
+# --- HEADER WITH LOGO ---
+col1, col2 = st.columns([4,1])
 with col1:
-    st.markdown("🏛️ University of Okara | MS/CS Research Project | Version 2.4")
+    st.markdown("🏛️ **University of Okara | MS/CS Research Project | Version 2.4**")
 with col2:
-    st.image("https://uo.edu.pk/wp-content/uploads/2021/05/UO-Logo.png", width=120) # apna logo ka link daal dena
+    # Yahan apna logo ka URL daal do. Agar nahi hai to ye line delete kar do
+    st.image("https://uo.edu.pk/wp-content/uploads/2021/05/UO-Logo.png", width=100)
 
 st.title("🧠 Smart Multilingual RAG Assistant")
 
@@ -122,11 +123,11 @@ with st.sidebar:
 
 # --- MAIN CONTENT ---
 if st.session_state.vector_db is None:
-    st.warning("📋 **System Status:** Awaiting document upload & processing...")
+    st.info("📋 **System Status:** Awaiting document upload & processing...")
 else:
-    st.success("📋 **System Status:** Knowledge Base Ready")
+    st.success(f"📋 **System Status:** Knowledge Base Ready - {len(st.session_state.available_files)} files loaded")
 
-col1, col2 = st.columns(2)
+col1, col2 = st.columns([1.2, 1])
 
 with col1:
     st.markdown("### ☑️ Project Statistics")
@@ -138,11 +139,12 @@ with col1:
 
 with col2:
     st.markdown("### 💡 Example Questions")
-    if st.button("📍 Summarize this document."):
+    c1, c2, c3 = st.columns(1)
+    if c1.button("📍 Summarize this document.", use_container_width=True):
         st.session_state.example_q = "Summarize this document."
-    if st.button("🎯 What are the main objectives?"):
+    if c2.button("🎯 What are the main objectives?", use_container_width=True):
         st.session_state.example_q = "What are the main objectives?"
-    if st.button("📄 List the key findings."):
+    if c3.button("📄 List the key findings.", use_container_width=True):
         st.session_state.example_q = "List the key findings."
     
     selected_lang = st.selectbox("Answer Language", ["Auto / Detect", "English", "Urdu", "Roman Urdu", "Arabic"])
@@ -156,19 +158,22 @@ if "example_q" in st.session_state:
 else:
     question = st.text_input("Type your question and press Enter to submit...", key="question_input")
 
-if question:
-    if st.session_state.vector_db is None:
-        st.warning("Please upload and process documents first.")
+if st.button("Get Answer", type="primary"):
+    if question:
+        if st.session_state.vector_db is None:
+            st.warning("Please upload and process documents first.")
+        else:
+            with st.spinner("Thinking..."):
+                result = ask_rag(question, selected_lang)
+                st.markdown("#### Answer")
+                st.write(result["result"])
+                
+                with st.expander("📄 Source Documents"):
+                    for doc in result["source_documents"]:
+                        st.write(f"**Source:** {doc.metadata.get('source', 'Unknown')}")
+                        st.write(doc.page_content[:500] + "...")
     else:
-        with st.spinner("Thinking..."):
-            result = ask_rag(question, selected_lang)
-            st.markdown("#### Answer")
-            st.write(result["result"])
-            
-            with st.expander("📄 Source Documents"):
-                for doc in result["source_documents"]:
-                    st.write(f"**Source:** {doc.metadata.get('source', 'Unknown')}")
-                    st.write(doc.page_content[:500] + "...")
+        st.warning("Please enter a question.")
 
 st.markdown("---")
 st.markdown("<center>© 2026 Smart Multilingual AI RAG Assistant. All rights reserved.<br>Department of Computer Science • University of Okara</center>", unsafe_allow_html=True)
