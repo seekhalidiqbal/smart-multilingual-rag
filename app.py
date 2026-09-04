@@ -15,7 +15,20 @@ from langchain_groq import ChatGroq
 st.set_page_config(page_title="Smart Multilingual AI RAG Assistant", page_icon="🤖", layout="wide", initial_sidebar_state="expanded")
 LOGO_PATH = "logo.png"
 
-st.markdown("""<style>.stApp{background:#f8fafc;}.block-container{max-width:1400px;padding-top:1rem;}.gradio-title{color:#0f172a;font-size:28px;font-weight:800;}.gradio-sub{color:#475569;font-size:15px;font-weight:600;margin-top:4px;}.gradio-meta{color:#64748b;font-size:13px;margin-top:4px;}.status-card{padding:14px 18px;border-radius:12px;font-weight:600;margin-bottom:20px;font-size:14px;}.status-ready{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}.status-waiting{background:#fffbeb;border:1px solid #fef3c7;color:#92400e;}.section-title{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;}.footer-gradio{text-align:center;color:#64748b;font-size:12px;padding:25px 0;border-top:1px solid #e2e8f0;margin-top:30px;} </style>""", unsafe_allow_html=True)
+st.markdown("""
+    <style>
+   .stApp{background:#f8fafc;}
+   .block-container{max-width:1400px;padding-top:1rem;}
+   .gradio-title{color:#0f172a;font-size:24px;font-weight:800;word-wrap:break-word;white-space:normal;line-height:1.3;}
+   .gradio-sub{color:#475569;font-size:15px;font-weight:600;margin-top:4px;}
+   .gradio-meta{color:#64748b;font-size:13px;margin-top:4px;}
+   .status-card{padding:14px 18px;border-radius:12px;font-weight:600;margin-bottom:20px;font-size:14px;}
+   .status-ready{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+   .status-waiting{background:#fffbeb;border:1px solid #fef3c7;color:#92400e;}
+   .section-title{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;}
+   .footer-gradio{text-align:center;color:#64748b;font-size:12px;padding:25px 0;border-top:1px solid #e2e8f0;margin-top:30px;}
+    </style>
+    """, unsafe_allow_html=True)
 
 defaults = {"documents": [], "chunks": [], "vector_db": None, "retriever": None, "llm": None, "available_files": [], "chat_history": [], "last_retrieved": 0, "last_response_time": 0.0, "questions_asked": 0, "answers_generated": 0, "last_language": "Auto / Detect", "preset_question": None}
 for key, value in defaults.items():
@@ -26,16 +39,21 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 try: GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
 except Exception: GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# HEADER
-col1, col2 = st.columns([5, 1])
-with col1:
-    st.markdown('<div class="gradio-title">🤖 Smart_Multilingual_Multi_Document_AI_RAG_Assistant</div>', unsafe_allow_html=True)
-    st.markdown('<div class="gradio-sub">💻 Department of Computer Science</div>', unsafe_allow_html=True)
-    st.markdown('<div class="gradio-meta">🎓 University of Okara • MSCS Research Project &nbsp;|&nbsp; ⚙️ Version 6.24</div>', unsafe_allow_html=True)
-with col2:
-    if os.path.exists(LOGO_PATH): st.image(LOGO_PATH, width=100)
-    else: st.caption("Logo not found")
-st.markdown('<div style="border:1px solid #e2e8f0;border-radius:16px;padding:1px;background:#fff;margin:20px 0;box-shadow:0 4px 12px rgba(0,0,0,0.03);"></div>', unsafe_allow_html=True)
+# ================= HEADER FIXED =================
+header_container = st.container()
+with header_container:
+    col1, col2 = st.columns([4, 1]) # logo ke liye zyada space
+    with col1:
+        st.markdown('<div class="gradio-title">🤖 Smart Multilingual Multi Document AI RAG Assistant</div>', unsafe_allow_html=True)
+        st.markdown('<div class="gradio-sub">💻 Department of Computer Science</div>', unsafe_allow_html=True)
+        st.markdown('<div class="gradio-meta">🎓 University of Okara • MSCS Research Project &nbsp;|&nbsp; ⚙️ Version 6.24</div>', unsafe_allow_html=True)
+    with col2:
+        if os.path.exists(LOGO_PATH): 
+            st.image(LOGO_PATH, width=110)
+        else: 
+            st.caption("Logo not found")
+st.markdown('<hr style="margin:20px 0; border:1px solid #e2e8f0;">', unsafe_allow_html=True)
+# ================================================
 
 # FUNCTIONS
 def load_documents(files):
@@ -47,10 +65,11 @@ def load_documents(files):
         save_path = os.path.join(UPLOAD_DIR, filename)
         with open(save_path, "wb") as file: file.write(uploaded_file.getbuffer())
         extension = Path(filename).suffix.lower()
-        loader = {"pdf": PyPDFLoader, "docx": UnstructuredWordDocumentLoader, "txt": TextLoader, "csv": CSVLoader, "pptx": UnstructuredPowerPointLoader}.get(extension.replace(".",""))
-        if loader: docs = loader(save_path).load()
-        for doc in docs: doc.metadata["source"] = filename
-        documents.extend(docs)
+        loaders = {".pdf": PyPDFLoader, ".docx": UnstructuredWordDocumentLoader, ".txt": TextLoader, ".csv": CSVLoader, ".pptx": UnstructuredPowerPointLoader}
+        if extension in loaders: 
+            docs = loaders[extension](save_path).load()
+            for doc in docs: doc.metadata["source"] = filename
+            documents.extend(docs)
     return documents
 
 def create_chunks(documents):
@@ -63,7 +82,7 @@ def build_vector_database(chunks):
     return embedding_model, vector_db
 
 def build_rag(vector_db):
-    if not GROQ_API_KEY: raise Exception("GROQ_API_KEY is not configured.")
+    if not GROQ_API_KEY: raise Exception("GROQ_API_KEY is not configured in secrets.")
     retriever = vector_db.as_retriever(search_type="mmr", search_kwargs={"k": 8, "fetch_k": 25, "lambda_mult": 0.70})
     llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0, max_tokens=1400, groq_api_key=GROQ_API_KEY)
     return retriever, llm
@@ -106,8 +125,10 @@ with st.sidebar:
     st.markdown("📚 **Multiple Document Support**\n🔎 **Semantic Search (FAISS)**\n🧠 **Context-Aware Retrieval**\n🤖 **AI Response Generation**")
 
 # MAIN
-if st.session_state.vector_db is not None: st.markdown(f'<div class="status-card status-ready">📊 System Status: Knowledge Base Ready ({len(st.session_state.available_files)} Files loaded)</div>', unsafe_allow_html=True)
-else: st.markdown('<div class="status-card status-waiting">📊 System Status: Awaiting document upload & processing...</div>', unsafe_allow_html=True)
+if st.session_state.vector_db is not None: 
+    st.markdown(f'<div class="status-card status-ready">📊 System Status: Knowledge Base Ready ({len(st.session_state.available_files)} Files loaded)</div>', unsafe_allow_html=True)
+else: 
+    st.markdown('<div class="status-card status-waiting">📊 System Status: Awaiting document upload & processing...</div>', unsafe_allow_html=True)
 
 col_left, col_right = st.columns([1, 1])
 with col_left:
@@ -134,14 +155,24 @@ if active_question:
         with st.chat_message("user"): st.markdown(active_question)
         with st.chat_message("assistant"):
             with st.spinner("🚀 Getting Answer..."):
+                start_time = time.time()
                 res = ask_rag(active_question, selected_lang)
                 answer = res["result"]
                 sources = res["source_documents"]
+                elapsed = round(time.time() - start_time, 2)
                 response_text = f"{answer}\n\n**📄 Sources**\n" + "\n".join([f"• {os.path.basename(str(doc.metadata.get('source','Unknown')))}" for doc in sources])
                 st.markdown(response_text)
                 st.session_state.chat_history.append({"role": "assistant", "content": response_text})
                 st.session_state.questions_asked += 1
                 st.session_state.answers_generated += 1
+                st.session_state.last_retrieved = len(sources)
+                st.session_state.last_response_time = elapsed
+                st.session_state.last_language = selected_lang if selected_lang!= "Auto / Detect" else "Detected"
                 st.rerun()
+
+if st.session_state.chat_history:
+    if st.button("🧹 Clear Chat", use_container_width=True):
+        st.session_state.chat_history = []
+        st.rerun()
 
 st.markdown("""<div class="footer-gradio">© 2026 Smart Multilingual AI RAG Assistant. All rights reserved.<br>Department of Computer Science • University of Okara</div>""", unsafe_allow_html=True)
