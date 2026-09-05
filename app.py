@@ -31,7 +31,7 @@ st.set_page_config(
 # ==========================================================
 # LOGO PATH
 # ==========================================================
-LOGO_PATH = "logo.png" # logo.png file repo me honi chahiye
+LOGO_PATH = "logo.png" 
 
 # ==========================================================
 # LOGO TO BASE64
@@ -48,10 +48,18 @@ def get_base64_logo(path):
 logo_b64 = get_base64_logo(LOGO_PATH)
 
 # ==========================================================
-# CUSTOM CSS FOR CENTER HEADER
+# CUSTOM CSS - GAP HATANE KE LIYE YE IMPORTANT HAI
 # ==========================================================
 st.markdown(f"""
 <style>
+    /* 1. YE LINE GAP KHATAM KAREGI */
+    .block-container {{
+        padding-top: 1rem;  /* pehle 6rem hota hai */
+        padding-bottom: 1rem;
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }}
+    /* 2. HEADER KO UPAR CHIPKA DEGA */
     .main-header {{
         background: linear-gradient(90deg, #0D47A1, #1976D2);
         padding: 15px 30px;
@@ -59,6 +67,7 @@ st.markdown(f"""
         display: flex;
         align-items: center;
         gap: 20px;
+        margin-top: -1rem;  /* UPAR KHISKA DIYA */
         margin-bottom: 20px;
         color: white;
         position: relative;
@@ -92,7 +101,7 @@ st.markdown(f"""
         <h1>Smart_Multilingual_Multi_Document_AI_RAG_Assistant</h1>
         <p>🏛️ Department of Computer Science | 🎓 University of Okara • MSCS Research Project | ⚡ Version 6.24</p>
     </div>
-    <div style="width: 70px;"></div> <!-- logo ke barabar space right me -->
+    <div style="width: 70px;"></div>
 </div>
 """, unsafe_allow_html=True)
 
