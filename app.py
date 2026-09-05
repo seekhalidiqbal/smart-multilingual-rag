@@ -48,7 +48,7 @@ def get_base64_logo(path):
 logo_b64 = get_base64_logo(LOGO_PATH)
 
 # ==========================================================
-# CUSTOM CSS - GAP THEEK KIYA HUA
+# CUSTOM CSS - HEADER HEIGHT BIG + SIDEBAR FIX
 # ==========================================================
 st.markdown(f"""
 <style>
@@ -59,41 +59,61 @@ st.markdown(f"""
         padding-left: 3rem;
         padding-right: 3rem;
     }}
-    /* 2. HEADER */
+    
+    /* 2. HEADER - HEIGHT BARHA DI */
     .main-header {{
         background: linear-gradient(90deg, #0D47A1, #1976D2);
-        padding: 15px 30px;
-        border-radius: 10px;
+        padding: 25px 30px;  /* <- PEHLE 15px THA, AB 25px */
+        border-radius: 12px; /* <- THORA ZYADA ROUND */
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 25px;           /* <- GAP BHI BARHA DIYA */
         margin-top: 0rem;
-        margin-bottom: 20px;
+        margin-bottom: 25px; /* <- NEECHE GAP BHI */
         color: white;
         position: relative;
+        min-height: 110px;   /* <- YE NAYI LINE: HEADER KI MIN HEIGHT */
     }}
+    
     .main-header img {{
-        width: 70px;
-        height: 70px;
-        border-radius: 8px;
+        width: 85px;         /* <- PEHLE 70px THA, AB 85px */
+        height: 85px;        /* <- PEHLE 70px THA, AB 85px */
+        border-radius: 10px;
         border: 2px solid white;
         background: white;
         object-fit: contain;
     }}
+    
     .header-center {{
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
         text-align: center;
     }}
-    .header-center h1 {{margin: 0; font-size: 22px; font-weight: 700;}}
-    .header-center p {{margin: 0; font-size: 13px; opacity: 0.9;}}
     
-    /* 3. UPAR WALA STREAMLIT BAR CHUPANA */
+    .header-center h1 {{
+        margin: 0; 
+        font-size: 24px;     /* <- PEHLE 22px THA, AB 24px */
+        font-weight: 700;
+    }}
+    
+    .header-center p {{
+        margin: 5px 0 0 0;   /* <- UPAR THORA GAP */
+        font-size: 14px;     /* <- PEHLE 13px THA, AB 14px */
+        opacity: 0.95;
+    }}
+    
+    /* 3. SIDEBAR HAMESHA SHOW */
+    [data-testid="stSidebar"] {{
+        display: block !important;
+        min-width: 350px !important;
+        max-width: 350px !important;
+    }}
+    
+    /* 4. TOP BAR CHUPAO */
     #MainMenu {{visibility: hidden;}}
-    header {{visibility: hidden;}}
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True))
 
 # ==========================================================
 # FULL WIDTH HEADER WITH CENTERED TEXT
