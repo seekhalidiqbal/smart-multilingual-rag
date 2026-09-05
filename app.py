@@ -28,16 +28,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-
-# ==========================================================
-# LOGO PATH
-# ==========================================================
-
-LOGO_PATH = "logo.png"
-    
-
-
+LOGO_PATH = "logo.png"  # logo.png file repo me honi chahiye
 # ==========================================================
 # CUSTOM CSS
 # ==========================================================
