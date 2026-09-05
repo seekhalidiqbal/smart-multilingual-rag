@@ -153,34 +153,18 @@ st.markdown(
 
 
 # ==========================================================
-# HEADER
+# FULL WIDTH HEADER WITH CENTERED TEXT
 # ==========================================================
-st.markdown(
-    f"""
+st.markdown(f"""
 <div class="main-header">
-
     <img src="data:image/png;base64,{logo_b64}">
-
     <div class="header-center">
-
-        <h1>
-            Smart_Multilingual_Multi_Document_AI_RAG_Assistant
-        </h1>
-
-        <p>
-            🏛️ Department of Computer Science |
-            🎓 University of Okara • MSCS Research Project |
-            ⚡ Version 6.24
-        </p>
-
+        <h1>Smart_Multilingual_Multi_Document_AI_RAG_Assistant</h1>
+        <p>🏛️ Department of Computer Science | 🎓 University of Okara • MSCS Research Project | ⚡ Version 6.24</p>
     </div>
-
     <div style="width: 70px;"></div>
-
 </div>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
 
 # ==========================================================
