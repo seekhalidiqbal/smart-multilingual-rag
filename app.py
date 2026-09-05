@@ -113,7 +113,7 @@ st.markdown(f"""
     /* 4. TOP BAR CHUPAO */
     #MainMenu {{visibility: hidden;}}
 </style>
-""", unsafe_allow_html=True))
+""", unsafe_allow_html=True)
 
 # ==========================================================
 # FULL WIDTH HEADER WITH CENTERED TEXT
