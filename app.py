@@ -55,7 +55,7 @@ st.markdown(f"""
     /* 1. YE LINE GAP KHATAM KAREGI */
     .block-container {{
         padding-top: 1rem;  /* pehle 6rem hota hai */
-        padding-bottom: 1rem;
+        padding-bottom: 0rem;
         padding-left: 3rem;
         padding-right: 3rem;
     }}
