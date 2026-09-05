@@ -1,7 +1,7 @@
 import os
 import shutil
 import time
-import base64 # 1. ye line add karo
+import base64
 from pathlib import Path
 
 import streamlit as st
@@ -21,7 +21,6 @@ from langchain_groq import ChatGroq
 # ==========================================================
 # PAGE CONFIG
 # ==========================================================
-
 st.set_page_config(
     page_title="Smart Multilingual AI RAG Assistant",
     page_icon="🤖",
@@ -32,10 +31,10 @@ st.set_page_config(
 # ==========================================================
 # LOGO PATH
 # ==========================================================
-LOGO_PATH = "logo.png" # logo.png file repo me honi chahiye
+LOGO_PATH = "logo.png" 
 
 # ==========================================================
-# LOGO TO BASE64 - YE HI LOGO SHOW KAREGA
+# LOGO TO BASE64
 # ==========================================================
 @st.cache_data
 def get_base64_logo(path):
@@ -44,53 +43,94 @@ def get_base64_logo(path):
             data = f.read()
         return base64.b64encode(data).decode()
     except:
-        return "" # agar file na mile
+        return ""
 
 logo_b64 = get_base64_logo(LOGO_PATH)
 
 # ==========================================================
-# CUSTOM CSS FOR HEADER
+# CUSTOM CSS - HEADER HEIGHT BIG + SIDEBAR FIX
 # ==========================================================
 st.markdown(f"""
 <style>
+    /* 1. UPAR WALA GAP THEEK */
+    .block-container {{
+        padding-top: 2.5rem;
+        padding-bottom: 1rem;
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }}
+    
+    /* 2. HEADER - HEIGHT BARHA DI */
     .main-header {{
         background: linear-gradient(90deg, #0D47A1, #1976D2);
-        padding: 15px 30px;
-        border-radius: 10px;
+        padding: 25px 30px;  /* <- PEHLE 15px THA, AB 25px */
+        border-radius: 12px; /* <- THORA ZYADA ROUND */
         display: flex;
         align-items: center;
-        gap: 20px;
-        margin-bottom: 20px;
+        gap: 25px;           /* <- GAP BHI BARHA DIYA */
+        margin-top: 0rem;
+        margin-bottom: 25px; /* <- NEECHE GAP BHI */
         color: white;
+        position: relative;
+        min-height: 110px;   /* <- YE NAYI LINE: HEADER KI MIN HEIGHT */
     }}
+    
     .main-header img {{
-        width: 70px;
-        height: 70px;
-        border-radius: 8px;
+        width: 85px;         /* <- PEHLE 70px THA, AB 85px */
+        height: 85px;        /* <- PEHLE 70px THA, AB 85px */
+        border-radius: 10px;
         border: 2px solid white;
         background: white;
         object-fit: contain;
     }}
-    .main-header h1 {{margin: 0; font-size: 24px;}}
-    .main-header p {{margin: 0; font-size: 14px; opacity: 0.9;}}
+    
+    .header-center {{
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+    }}
+    
+    .header-center h1 {{
+        margin: 0; 
+        font-size: 24px;     /* <- PEHLE 22px THA, AB 24px */
+        font-weight: 700;
+    }}
+    
+    .header-center p {{
+        margin: 5px 0 0 0;   /* <- UPAR THORA GAP */
+        font-size: 14px;     /* <- PEHLE 13px THA, AB 14px */
+        opacity: 0.95;
+    }}
+    
+    /* 3. SIDEBAR HAMESHA SHOW */
+    [data-testid="stSidebar"] {{
+        display: block !important;
+        min-width: 350px !important;
+        max-width: 350px !important;
+    }}
+    
+    /* 4. TOP BAR CHUPAO */
+    #MainMenu {{visibility: hidden;}}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================================
-# FULL WIDTH HEADER WITH LOGO
+# FULL WIDTH HEADER WITH CENTERED TEXT
 # ==========================================================
 st.markdown(f"""
 <div class="main-header">
     <img src="data:image/png;base64,{logo_b64}">
-    <div>
+    <div class="header-center">
         <h1>Smart_Multilingual_Multi_Document_AI_RAG_Assistant</h1>
         <p>🏛️ Department of Computer Science | 🎓 University of Okara • MSCS Research Project | ⚡ Version 6.24</p>
     </div>
+    <div style="width: 70px;"></div>
 </div>
 """, unsafe_allow_html=True)
 
 # ==========================================================
-# YOUR EXISTING CODE STARTS FROM HERE - NO CHANGE
+# YOUR EXISTING CODE STARTS FROM HERE
 # ==========================================================
 
 # --- SESSION STATE ---
@@ -111,10 +151,9 @@ with st.sidebar:
     if st.button("⚙️ Process Documents", type="primary", use_container_width=True):
         if uploaded_files:
             with st.spinner("Processing documents..."):
-                # Yahan tumhara document processing logic aayega
                 st.session_state.file_names = [f.name for f in uploaded_files]
                 st.session_state.stats["files"] = len(uploaded_files)
-                st.session_state.stats["chunks"] = len(uploaded_files) * 8 # dummy
+                st.session_state.stats["chunks"] = len(uploaded_files) * 8 
                 st.success("Knowledge Base Ready!")
                 st.rerun()
         else:
@@ -160,6 +199,5 @@ with col2:
 question = st.chat_input("Type your question and press Enter to submit...")
 if question:
     st.session_state.stats["questions"] += 1
-    # Yahan tumhara RAG logic aayega
     st.session_state.stats["answers"] += 1
     st.rerun()
