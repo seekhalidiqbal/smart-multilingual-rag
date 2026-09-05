@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 import base64
+import tempfile
 from pathlib import Path
 
 import streamlit as st
@@ -17,6 +18,8 @@ from langchain_community.document_loaders import (
     UnstructuredPowerPointLoader,
 )
 from langchain_groq import ChatGroq
+from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
 
 # ==========================================================
 # PAGE CONFIG
@@ -52,14 +55,12 @@ logo_b64 = get_base64_logo(LOGO_PATH)
 # ==========================================================
 st.markdown(f"""
 <style>
-    /* 1. UPAR WALA GAP THEEK */
     .block-container {{
         padding-top: 2.5rem;
         padding-bottom: 1rem;
         padding-left: 3rem;
         padding-right: 3rem;
     }}
-    /* 2. HEADER */
     .main-header {{
         background: linear-gradient(90deg, #0D47A1, #1976D2);
         padding: 15px 30px;
@@ -88,8 +89,6 @@ st.markdown(f"""
     }}
     .header-center h1 {{margin: 0; font-size: 22px; font-weight: 700;}}
     .header-center p {{margin: 0; font-size: 13px; opacity: 0.9;}}
-    
-    /* 3. UPAR WALA STREAMLIT BAR CHUPANA */
     #MainMenu {{visibility: hidden;}}
     header {{visibility: hidden;}}
 </style>
@@ -110,18 +109,93 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==========================================================
-# YOUR EXISTING CODE STARTS FROM HERE
+# SESSION STATE
 # ==========================================================
-
-# --- SESSION STATE ---
 if "vector_db" not in st.session_state:
     st.session_state.vector_db = None
 if "file_names" not in st.session_state:
     st.session_state.file_names = []
 if "stats" not in st.session_state:
     st.session_state.stats = {"files": 0, "chunks": 0, "questions": 0, "answers": 0}
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "qa_chain" not in st.session_state:
+    st.session_state.qa_chain = None
+if "retrieved" not in st.session_state:
+    st.session_state.retrieved = 0
 
-# --- SIDEBAR ---
+# ==========================================================
+# FUNCTIONS
+# ==========================================================
+@st.cache_resource
+def load_embeddings():
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+def get_loader(file_path, file_type):
+    if file_type == "pdf": return PyPDFLoader(file_path)
+    elif file_type == "txt": return TextLoader(file_path, encoding="utf-8")
+    elif file_type == "csv": return CSVLoader(file_path)
+    elif file_type == "docx": return UnstructuredWordDocumentLoader(file_path)
+    elif file_type == "pptx": return UnstructuredPowerPointLoader(file_path)
+    else: return None
+
+def process_documents(uploaded_files):
+    docs = []
+    temp_dir = tempfile.TemporaryDirectory()
+    
+    for uploaded_file in uploaded_files:
+        file_path = os.path.join(temp_dir.name, uploaded_file.name)
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        
+        file_type = uploaded_file.name.split('.')[-1].lower()
+        loader = get_loader(file_path, file_type)
+        if loader:
+            docs.extend(loader.load())
+    
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    chunks = splitter.split_documents(docs)
+    st.session_state.stats["chunks"] = len(chunks)
+    
+    embeddings = load_embeddings()
+    st.session_state.vector_db = FAISS.from_documents(chunks, embeddings)
+    
+    # Groq LLM
+    groq_api_key = st.secrets.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY"))
+    if not groq_api_key:
+        st.error("GROQ_API_KEY not found. Add it in Settings > Secrets")
+        return
+    
+    llm = ChatGroq(groq_api_key=groq_api_key, model_name="llama-3.1-8b-instant", temperature=0.3)
+    
+    prompt_template = """Use the following context to answer the question. If you don't know, say so. Answer in the same language as the question.
+    Context: {context}
+    Question: {question}
+    Answer:"""
+    PROMPT = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+    
+    st.session_state.qa_chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type="stuff",
+        retriever=st.session_state.vector_db.as_retriever(search_kwargs={"k": 4}),
+        return_source_documents=True,
+        chain_type_kwargs={"prompt": PROMPT}
+    )
+    temp_dir.cleanup()
+
+def get_answer(query):
+    if st.session_state.qa_chain is None:
+        return "Please upload and process documents first.", []
+    
+    result = st.session_state.qa_chain({"query": query})
+    answer = result["result"]
+    sources = [f"{doc.metadata.get('source','Doc')}: {doc.page_content[:200]}..." for doc in result["source_documents"]]
+    st.session_state.retrieved = len(result["source_documents"])
+    return answer, sources
+
+# ==========================================================
+# SIDEBAR
+# ==========================================================
 with st.sidebar:
     st.markdown("### 📁 Document Management")
     st.caption("Upload one or more documents and then click Process Documents to build the knowledge base.")
@@ -133,7 +207,7 @@ with st.sidebar:
             with st.spinner("Processing documents..."):
                 st.session_state.file_names = [f.name for f in uploaded_files]
                 st.session_state.stats["files"] = len(uploaded_files)
-                st.session_state.stats["chunks"] = len(uploaded_files) * 8 
+                process_documents(uploaded_files)
                 st.success("Knowledge Base Ready!")
                 st.rerun()
         else:
@@ -148,7 +222,9 @@ with st.sidebar:
     st.markdown("✅ Source Citation")
     st.markdown("✅ Multilingual Support")
 
-# --- MAIN AREA ---
+# ==========================================================
+# MAIN AREA
+# ==========================================================
 col1, col2 = st.columns([1.5, 1])
 
 with col1:
@@ -158,7 +234,7 @@ with col1:
     
     stats_data = {
         "Metric": ["Uploaded Files", "Processed Documents", "Generated Chunks", "Retrieved Chunks", "Questions Asked", "Answers Generated"],
-        "Value": [st.session_state.stats["files"], st.session_state.stats["files"]*3, st.session_state.stats["chunks"], 8, st.session_state.stats["questions"], st.session_state.stats["answers"]]
+        "Value": [st.session_state.stats["files"], st.session_state.stats["files"], st.session_state.stats["chunks"], st.session_state.retrieved, st.session_state.stats["questions"], st.session_state.stats["answers"]]
     }
     st.dataframe(stats_data, use_container_width=True, hide_index=True)
 
@@ -173,11 +249,34 @@ with col2:
         "📊 Compare the uploaded documents."
     ]
     for ex in examples:
-        st.button(ex, use_container_width=True, key=ex)
+        clean_ex = ex[2:]
+        if st.button(ex, use_container_width=True, key=ex):
+            st.session_state.messages.append({"role": "user", "content": clean_ex})
+            st.rerun()
 
-# --- CHAT INPUT ---
-question = st.chat_input("Type your question and press Enter to submit...")
-if question:
+# ==========================================================
+# CHAT INTERFACE
+# ==========================================================
+st.markdown("---")
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+        if "sources" in message and message["sources"]:
+            with st.expander("📚 Sources"):
+                for src in message["sources"]:
+                    st.write(src)
+
+if prompt := st.chat_input("Type your question and press Enter to submit..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            response, sources = get_answer(prompt)
+            st.markdown(response)
+            if sources:
+                with st.expander("📚 Sources"):
+                    for src in sources:
+                        st.write(src)
+    st.session_state.messages.append({"role": "assistant", "content": response, "sources": sources})
     st.session_state.stats["questions"] += 1
     st.session_state.stats["answers"] += 1
     st.rerun()
