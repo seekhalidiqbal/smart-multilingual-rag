@@ -1,3 +1,4 @@
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import streamlit as st
 import os
 import io
