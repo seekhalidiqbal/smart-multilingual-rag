@@ -19,7 +19,7 @@ from langchain_community.document_loaders import (
     UnstructuredPowerPointLoader,
 )
 from langchain_groq import ChatGroq
-from langchain.chains import RetrievalQA
+from langchain.chains.retrieval_qa.base import RetrievalQA # <-- THEEK KIYA HUA
 from langchain.prompts import PromptTemplate
 
 # ==========================================================
@@ -93,7 +93,7 @@ st.markdown(f"""
     header {{visibility: hidden;}}
     [data-testid="stSidebar"] {{min-width: 350px;}}
 </style>
-""", unsafe_allow_html=True) # <-- IMPORTANT
+""", unsafe_allow_html=True)
 
 # ==========================================================
 # FULL WIDTH HEADER WITH CENTERED TEXT
@@ -107,7 +107,7 @@ st.markdown(f"""
     </div>
     <div style="width: 70px;"></div>
 </div>
-""", unsafe_allow_html=True) # <-- IMPORTANT
+""", unsafe_allow_html=True)
 
 # ==========================================================
 # SESSION STATE
