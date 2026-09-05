@@ -48,18 +48,18 @@ def get_base64_logo(path):
 logo_b64 = get_base64_logo(LOGO_PATH)
 
 # ==========================================================
-# CUSTOM CSS - GAP HATANE KE LIYE YE IMPORTANT HAI
+# CUSTOM CSS - GAP THEEK KIYA HUA
 # ==========================================================
 st.markdown(f"""
 <style>
-    /* 1. YE LINE GAP KHATAM KAREGI */
+    /* 1. UPAR WALA GAP THEEK */
     .block-container {{
-        padding-top: 1rem;  /* pehle 6rem hota hai */
-        padding-bottom: 0rem;
+        padding-top: 2.5rem;
+        padding-bottom: 1rem;
         padding-left: 3rem;
         padding-right: 3rem;
     }}
-    /* 2. HEADER KO UPAR CHIPKA DEGA */
+    /* 2. HEADER */
     .main-header {{
         background: linear-gradient(90deg, #0D47A1, #1976D2);
         padding: 15px 30px;
@@ -67,7 +67,7 @@ st.markdown(f"""
         display: flex;
         align-items: center;
         gap: 20px;
-        margin-top: -1rem;  /* UPAR KHISKA DIYA */
+        margin-top: 0rem;
         margin-bottom: 20px;
         color: white;
         position: relative;
@@ -88,6 +88,10 @@ st.markdown(f"""
     }}
     .header-center h1 {{margin: 0; font-size: 22px; font-weight: 700;}}
     .header-center p {{margin: 0; font-size: 13px; opacity: 0.9;}}
+    
+    /* 3. UPAR WALA STREAMLIT BAR CHUPANA */
+    #MainMenu {{visibility: hidden;}}
+    header {{visibility: hidden;}}
 </style>
 """, unsafe_allow_html=True)
 
