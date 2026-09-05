@@ -12,11 +12,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import (
-    PyPDFLoader,
-    TextLoader,
-    CSVLoader,
-    UnstructuredWordDocumentLoader,
-    UnstructuredPowerPointLoader,
+    PyPDFLoader, TextLoader, CSVLoader,
+    UnstructuredWordDocumentLoader, UnstructuredPowerPointLoader,
+)
+from langchain_groq import ChatGroq
+from langchain.chains.retrieval_qa.base import RetrievalQA # <-- YE LINE CHANGE
+from langchain.prompts import PromptTemplate
 )
 from langchain_groq import ChatGroq
 from langchain.chains import RetrievalQA
