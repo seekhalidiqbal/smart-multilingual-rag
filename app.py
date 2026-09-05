@@ -1,189 +1,162 @@
-import os
-import shutil
-import time
-import base64
-from pathlib import Path
-
 import streamlit as st
-
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
+import os
+import fitz  # PyMuPDF
+import pandas as pd
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.document_loaders import (
-    PyPDFLoader,
-    TextLoader,
-    CSVLoader,
-    UnstructuredWordDocumentLoader,
-    UnstructuredPowerPointLoader,
-)
-from langchain_groq import ChatGroq
+from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
 
 # ==========================================================
 # PAGE CONFIG
 # ==========================================================
 st.set_page_config(
-    page_title="Smart Multilingual AI RAG Assistant",
-    page_icon="🤖",
+    page_title="Smart Multilingual RAG Assistant",
+    page_icon="🧠",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded"
 )
 
 # ==========================================================
-# LOGO PATH
-# ==========================================================
-LOGO_PATH = "logo.png" 
-
-# ==========================================================
-# LOGO TO BASE64
-# ==========================================================
-@st.cache_data
-def get_base64_logo(path):
-    try:
-        with open(path, "rb") as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    except:
-        return ""
-
-logo_b64 = get_base64_logo(LOGO_PATH)
-
-# ==========================================================
-# CUSTOM CSS - HEADER HEIGHT BIG + SIDEBAR FIX
+# CUSTOM CSS - HEADER BIG + SIDEBAR FIX
 # ==========================================================
 st.markdown(f"""
 <style>
-    /* 1. UPAR WALA GAP THEEK */
     .block-container {{
         padding-top: 2.5rem;
         padding-bottom: 1rem;
         padding-left: 3rem;
         padding-right: 3rem;
     }}
-    
-    /* 2. HEADER - HEIGHT BARHA DI */
     .main-header {{
         background: linear-gradient(90deg, #0D47A1, #1976D2);
-        padding: 25px 30px;  /* <- PEHLE 15px THA, AB 25px */
-        border-radius: 12px; /* <- THORA ZYADA ROUND */
+        padding: 25px 30px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
-        gap: 25px;           /* <- GAP BHI BARHA DIYA */
+        gap: 25px;
         margin-top: 0rem;
-        margin-bottom: 25px; /* <- NEECHE GAP BHI */
+        margin-bottom: 25px;
         color: white;
         position: relative;
-        min-height: 110px;   /* <- YE NAYI LINE: HEADER KI MIN HEIGHT */
+        min-height: 110px;
     }}
-    
     .main-header img {{
-        width: 85px;         /* <- PEHLE 70px THA, AB 85px */
-        height: 85px;        /* <- PEHLE 70px THA, AB 85px */
+        width: 85px;
+        height: 85px;
         border-radius: 10px;
         border: 2px solid white;
         background: white;
         object-fit: contain;
     }}
-    
     .header-center {{
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
         text-align: center;
     }}
-    
-    .header-center h1 {{
-        margin: 0; 
-        font-size: 24px;     /* <- PEHLE 22px THA, AB 24px */
-        font-weight: 700;
-    }}
-    
-    .header-center p {{
-        margin: 5px 0 0 0;   /* <- UPAR THORA GAP */
-        font-size: 14px;     /* <- PEHLE 13px THA, AB 14px */
-        opacity: 0.95;
-    }}
-    
-    /* 3. SIDEBAR HAMESHA SHOW */
+    .header-center h1 {{margin: 0; font-size: 24px; font-weight: 700;}}
+    .header-center p {{margin: 5px 0 0 0; font-size: 14px; opacity: 0.95;}}
     [data-testid="stSidebar"] {{
         display: block !important;
         min-width: 350px !important;
         max-width: 350px !important;
     }}
-    
-    /* 4. TOP BAR CHUPAO */
     #MainMenu {{visibility: hidden;}}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================================
-# FULL WIDTH HEADER WITH CENTERED TEXT
+# SESSION STATE
 # ==========================================================
-st.markdown(f"""
-<div class="main-header">
-    <img src="data:image/png;base64,{logo_b64}">
-    <div class="header-center">
-        <h1>Smart_Multilingual_Multi_Document_AI_RAG_Assistant</h1>
-        <p>🏛️ Department of Computer Science | 🎓 University of Okara • MSCS Research Project | ⚡ Version 6.24</p>
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "vectorstore" not in st.session_state:
+    st.session_state.vectorstore = None
+if "qa_chain" not in st.session_state:
+    st.session_state.qa_chain = None
+if "processed_docs" not in st.session_state:
+    st.session_state.processed_docs = 0
+if "uploaded_files" not in st.session_state:
+    st.session_state.uploaded_files = []
+
+# ==========================================================
+# HEADER
+# ==========================================================
+col1, col2, col3 = st.columns([1, 8, 1])
+with col2:
+    st.markdown("""
+    <div class="main-header">
+        <img src="https://www.uok.edu.pk/logo.png" alt="Logo">
+        <div class="header-center">
+            <h1>Smart_Multilingual_Multi_Document_AI_RAG_Assistant</h1>
+            <p>🏛️ Department of Computer Science | 🎓 University of Okara • MSCS Research Project | ⚡ Version 6.24</p>
+        </div>
     </div>
-    <div style="width: 70px;"></div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # ==========================================================
-# YOUR EXISTING CODE STARTS FROM HERE
+# SIDEBAR - DOCUMENT MANAGEMENT
 # ==========================================================
-
-# --- SESSION STATE ---
-if "vector_db" not in st.session_state:
-    st.session_state.vector_db = None
-if "file_names" not in st.session_state:
-    st.session_state.file_names = []
-if "stats" not in st.session_state:
-    st.session_state.stats = {"files": 0, "chunks": 0, "questions": 0, "answers": 0}
-
-# --- SIDEBAR ---
 with st.sidebar:
     st.markdown("### 📁 Document Management")
-    st.caption("Upload one or more documents and then click Process Documents to build the knowledge base.")
+    st.write("Upload one or more documents and then click Process Documents to build the knowledge base.")
     
-    uploaded_files = st.file_uploader("Select Documents", type=["pdf", "docx", "txt", "csv", "pptx"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader(
+        "Select Documents", 
+        type=["pdf", "txt", "docx"], 
+        accept_multiple_files=True
+    )
     
     if st.button("⚙️ Process Documents", type="primary", use_container_width=True):
         if uploaded_files:
             with st.spinner("Processing documents..."):
-                st.session_state.file_names = [f.name for f in uploaded_files]
-                st.session_state.stats["files"] = len(uploaded_files)
-                st.session_state.stats["chunks"] = len(uploaded_files) * 8 
-                st.success("Knowledge Base Ready!")
+                process_documents(uploaded_files)
+                st.success("Documents Processed Successfully!")
                 st.rerun()
         else:
-            st.warning("Please upload files first.")
-
+            st.warning("Please upload at least one document.")
+    
     st.markdown("---")
     st.markdown("### ℹ️ System Information")
-    st.markdown("✅ Multiple Document Support")
-    st.markdown("✅ Semantic Search (FAISS)")
-    st.markdown("✅ Context-Aware Retrieval")
-    st.markdown("✅ AI Response Generation")
-    st.markdown("✅ Source Citation")
-    st.markdown("✅ Multilingual Support")
+    st.checkbox("✅ Multiple Document Support", value=True, disabled=True)
+    st.checkbox("✅ Semantic Search (FAISS)", value=True, disabled=True)
+    st.checkbox("✅ Context-Aware Retrieval", value=True, disabled=True)
+    st.checkbox("✅ AI Response Generation", value=True, disabled=True)
+    st.checkbox("✅ Source Citation", value=True, disabled=True)
+    st.checkbox("✅ Multilingual Support", value=True, disabled=True)
 
-# --- MAIN AREA ---
-col1, col2 = st.columns([1.5, 1])
+# ==========================================================
+# MAIN COLUMNS
+# ==========================================================
+col_left, col_right = st.columns([1.2, 1])
 
-with col1:
-    st.markdown("#### 📊 Project Statistics")
-    status_text = f"Knowledge Base Ready ({st.session_state.stats['files']} Files loaded)" if st.session_state.vector_db else "Awaiting Document Upload"
-    st.info(f"📄 System Status: {status_text}")
+with col_left:
+    st.markdown("### 📊 Project Statistics")
     
+    # Status
+    if st.session_state.vectorstore:
+        st.info("✅ System Status: Ready - Ask any question")
+    else:
+        st.info("📄 System Status: Awaiting Document Upload")
+    
+    # Stats Table
     stats_data = {
         "Metric": ["Uploaded Files", "Processed Documents", "Generated Chunks", "Retrieved Chunks", "Questions Asked", "Answers Generated"],
-        "Value": [st.session_state.stats["files"], st.session_state.stats["files"]*3, st.session_state.stats["chunks"], 8, st.session_state.stats["questions"], st.session_state.stats["answers"]]
+        "Value": [
+            len(st.session_state.uploaded_files),
+            st.session_state.processed_docs,
+            st.session_state.get("chunks", 0),
+            st.session_state.get("retrieved", 0),
+            st.session_state.get("questions", 0),
+            len([m for m in st.session_state.messages if m["role"] == "assistant"])
+        ]
     }
-    st.dataframe(stats_data, use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(stats_data), use_container_width=True, hide_index=True)
 
-with col2:
-    st.markdown("#### 💡 Example Questions")
+with col_right:
+    st.markdown("### 💡 Example Questions")
     examples = [
         "🚀 Summarize this document.",
         "🎯 What are the main objectives?",
@@ -193,11 +166,97 @@ with col2:
         "📊 Compare the uploaded documents."
     ]
     for ex in examples:
-        st.button(ex, use_container_width=True, key=ex)
+        if st.button(ex, use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": ex.replace("🚀 ", "").replace("🎯 ", "").replace("📋 ", "").replace("🔬 ", "").replace("📝 ", "").replace("📊 ", "")})
+            st.rerun()
 
-# --- CHAT INPUT ---
-question = st.chat_input("Type your question and press Enter to submit...")
-if question:
-    st.session_state.stats["questions"] += 1
-    st.session_state.stats["answers"] += 1
+# ==========================================================
+# FUNCTIONS
+# ==========================================================
+def process_documents(files):
+    all_text = []
+    file_names = []
+    for file in files:
+        file_names.append(file.name)
+        if file.name.endswith(".pdf"):
+            pdf = fitz.open(stream=file.read(), filetype="pdf")
+            text = ""
+            for page in pdf:
+                text += page.get_text()
+            all_text.append(text)
+    
+    st.session_state.uploaded_files = file_names
+    st.session_state.processed_docs = len(files)
+    
+    # Split
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    chunks = text_splitter.create_documents(all_text)
+    st.session_state.chunks = len(chunks)
+    
+    # Embeddings + Vectorstore
+    # IMPORTANT: Yahan apni Google API Key daalo
+    os.environ["GOOGLE_API_KEY"] = "PASTE_YOUR_GOOGLE_API_KEY_HERE"
+    
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    st.session_state.vectorstore = FAISS.from_documents(chunks, embeddings)
+    
+    # QA Chain
+    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.3)
+    prompt_template = """Use the following context to answer the question. If you don't know, say so.
+    Context: {context}
+    Question: {question}
+    Answer in the same language as the question.
+    """
+    PROMPT = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+    
+    st.session_state.qa_chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type="stuff",
+        retriever=st.session_state.vectorstore.as_retriever(search_kwargs={"k": 4}),
+        return_source_documents=True,
+        chain_type_kwargs={"prompt": PROMPT}
+    )
+
+def get_answer(query):
+    if st.session_state.qa_chain is None:
+        return "Please upload and process documents first.", []
+    
+    result = st.session_state.qa_chain({"query": query})
+    answer = result["result"]
+    sources = [doc.page_content[:200] + "..." for doc in result["source_documents"]]
+    
+    st.session_state.retrieved = len(result["source_documents"])
+    st.session_state.questions = st.session_state.get("questions", 0) + 1
+    
+    return answer, sources
+
+# ==========================================================
+# CHAT INTERFACE
+# ==========================================================
+st.markdown("---")
+# Purani chat show karo
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+        if "sources" in message and message["sources"]:
+            with st.expander("📚 Sources"):
+                for i, src in enumerate(message["sources"]):
+                    st.write(f"**Source {i+1}:** {src}")
+
+# Naya question input
+if prompt := st.chat_input("Type your question and press Enter to submit..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            response, sources = get_answer(prompt)
+            st.markdown(response)
+            if sources:
+                with st.expander("📚 Sources"):
+                    for i, src in enumerate(sources):
+                        st.write(f"**Source {i+1}:** {src}")
+    
+    st.session_state.messages.append({"role": "assistant", "content": response, "sources": sources})
     st.rerun()
