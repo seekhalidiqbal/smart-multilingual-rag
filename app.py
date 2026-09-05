@@ -1,7 +1,7 @@
 import os
 import shutil
 import time
-import base64 # 1. ye line add karo
+import base64
 from pathlib import Path
 
 import streamlit as st
@@ -21,7 +21,6 @@ from langchain_groq import ChatGroq
 # ==========================================================
 # PAGE CONFIG
 # ==========================================================
-
 st.set_page_config(
     page_title="Smart Multilingual AI RAG Assistant",
     page_icon="🤖",
@@ -35,7 +34,7 @@ st.set_page_config(
 LOGO_PATH = "logo.png" # logo.png file repo me honi chahiye
 
 # ==========================================================
-# LOGO TO BASE64 - YE HI LOGO SHOW KAREGA
+# LOGO TO BASE64
 # ==========================================================
 @st.cache_data
 def get_base64_logo(path):
@@ -44,12 +43,12 @@ def get_base64_logo(path):
             data = f.read()
         return base64.b64encode(data).decode()
     except:
-        return "" # agar file na mile
+        return ""
 
 logo_b64 = get_base64_logo(LOGO_PATH)
 
 # ==========================================================
-# CUSTOM CSS FOR HEADER
+# CUSTOM CSS FOR CENTER HEADER
 # ==========================================================
 st.markdown(f"""
 <style>
@@ -62,6 +61,7 @@ st.markdown(f"""
         gap: 20px;
         margin-bottom: 20px;
         color: white;
+        position: relative;
     }}
     .main-header img {{
         width: 70px;
@@ -71,26 +71,33 @@ st.markdown(f"""
         background: white;
         object-fit: contain;
     }}
-    .main-header h1 {{margin: 0; font-size: 24px;}}
-    .main-header p {{margin: 0; font-size: 14px; opacity: 0.9;}}
+    .header-center {{
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+    }}
+    .header-center h1 {{margin: 0; font-size: 22px; font-weight: 700;}}
+    .header-center p {{margin: 0; font-size: 13px; opacity: 0.9;}}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================================
-# FULL WIDTH HEADER WITH LOGO
+# FULL WIDTH HEADER WITH CENTERED TEXT
 # ==========================================================
 st.markdown(f"""
 <div class="main-header">
     <img src="data:image/png;base64,{logo_b64}">
-    <div>
+    <div class="header-center">
         <h1>Smart_Multilingual_Multi_Document_AI_RAG_Assistant</h1>
         <p>🏛️ Department of Computer Science | 🎓 University of Okara • MSCS Research Project | ⚡ Version 6.24</p>
     </div>
+    <div style="width: 70px;"></div> <!-- logo ke barabar space right me -->
 </div>
 """, unsafe_allow_html=True)
 
 # ==========================================================
-# YOUR EXISTING CODE STARTS FROM HERE - NO CHANGE
+# YOUR EXISTING CODE STARTS FROM HERE
 # ==========================================================
 
 # --- SESSION STATE ---
@@ -111,10 +118,9 @@ with st.sidebar:
     if st.button("⚙️ Process Documents", type="primary", use_container_width=True):
         if uploaded_files:
             with st.spinner("Processing documents..."):
-                # Yahan tumhara document processing logic aayega
                 st.session_state.file_names = [f.name for f in uploaded_files]
                 st.session_state.stats["files"] = len(uploaded_files)
-                st.session_state.stats["chunks"] = len(uploaded_files) * 8 # dummy
+                st.session_state.stats["chunks"] = len(uploaded_files) * 8 
                 st.success("Knowledge Base Ready!")
                 st.rerun()
         else:
@@ -160,6 +166,5 @@ with col2:
 question = st.chat_input("Type your question and press Enter to submit...")
 if question:
     st.session_state.stats["questions"] += 1
-    # Yahan tumhara RAG logic aayega
     st.session_state.stats["answers"] += 1
     st.rerun()
