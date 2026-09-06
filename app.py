@@ -79,7 +79,7 @@ st.markdown(
 
     .main-header {{
         background: linear-gradient(90deg, #0D47A1, #1976D2);
-        padding: 5px 30px;
+        padding: 25px 30px;
         border-radius: 10px;
         display: flex;
         align-items: center;
