@@ -345,7 +345,6 @@ with st.sidebar:
 # ==========================================================
 
 def process_documents(uploaded_files):
-
     if not uploaded_files:
         return None, [], 0, 0
 
