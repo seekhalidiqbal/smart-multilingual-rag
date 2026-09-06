@@ -321,7 +321,25 @@ def save_uploaded_file(uploaded_file, folder):
 
     return str(file_path)
 
-
+with st.sidebar:
+    st.header("📄 Document Management")
+    st.caption("Upload one or more documents and then click Process Documents to build the knowledge base.")
+    
+    uploaded_files = st.file_uploader("Select Documents", type=['pdf', 'docx', 'doc', 'txt'], accept_multiple_files=True)
+    
+    # YE NAYA BLOCK ADD KARO
+    st.markdown("---")
+    st.subheader("🌐 Language Settings")
+    selected_lang = st.selectbox(
+        "Select Document Language",
+        ["English", "Urdu", "Roman Urdu", "Auto Detect"],
+        index=0
+    )
+    st.session_state['selected_lang'] = selected_lang
+    # BLOCK KHATAM
+    
+    if st.button("⚙️ Process Documents", type="primary"):
+        #... tumhara processing code
 # ==========================================================
 # PROCESS DOCUMENTS
 # ==========================================================
