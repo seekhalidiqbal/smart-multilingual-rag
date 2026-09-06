@@ -349,7 +349,12 @@ with st.sidebar:
     st.markdown("✅ AI Response Generation")
     st.markdown("✅ Source Citation")
     st.markdown("✅ Multilingual Support")
+    st.markdown("✅ Multilingual Support")
 
+    st.markdown("---")
+    st.markdown("### 🔗 Links")
+    st.markdown("[📱 Live App](https://smart-multilingual-rag-nz8n3jreb4fkjmkjmw2kkx.streamlit.app/)")
+    st.markdown("[💻 Source Code](https://github.com/seekhalidiqbal/smart-multilingual-rag)")
 # ==========================================================
 # MAIN AREA
 # ==========================================================
